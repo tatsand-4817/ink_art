@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="ja" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Webディレクター tattun のポートフォリオサイト。7年間の実績とスキルをご紹介します。">
+  <title>tattun | Web Director Portfolio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+JP:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+
+  <!-- GA4 Placeholder: Replace G-XXXXXXXXXX with your Measurement ID -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-XXXXXXXXXX');
+  </script>
+</head>
+<body>
+
+  <!-- ===== Header ===== -->
+  <header class="header" id="header">
+    <div class="container">
+      <a href="index.html" class="logo">
+        <span class="logo-icon">T</span>
+        tattun
+      </a>
+
+      <nav class="nav" id="nav">
+        <a href="index.html" class="nav-link active">Top</a>
+        <a href="works.html" class="nav-link">Works</a>
+        <a href="skills.html" class="nav-link">Skills</a>
+        <a href="shop.html" class="nav-link">Shop</a>
+        <a href="contact.html" class="nav-link">Contact</a>
+      </nav>
+
+      <div class="nav-actions">
+        <div class="search-bar">
+          <span class="search-icon">&#128269;</span>
+          <input type="search" id="site-search" placeholder="サイト内検索..." aria-label="サイト内検索">
+        </div>
+        <button class="theme-toggle" id="theme-toggle" aria-label="テーマ切替">
+          &#9790;
+        </button>
+        <button class="mobile-menu-btn" id="mobile-menu-btn" aria-label="メニュー">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===== Hero Section ===== -->
+  <section class="hero" id="hero">
+    <div class="container">
+      <div class="hero-content">
+        <div class="hero-text">
+          <h1>
+            Hi, I'm <span class="accent">tattun</span>.<br>
+            Web Director.
+          </h1>
+          <p class="lead">
+            7年間のWebディレクション経験を活かし、戦略設計からUI/UX、<br>
+            データ分析まで一気通貫でプロジェクトを推進します。
+          </p>
+
+          <div class="hero-stats">
+            <div class="hero-stat">
+              <div class="number">7+</div>
+              <div class="label">Years Experience</div>
+            </div>
+            <div class="hero-stat">
+              <div class="number">50+</div>
+              <div class="label">Projects</div>
+            </div>
+            <div class="hero-stat">
+              <div class="number">30+</div>
+              <div class="label">Clients</div>
+            </div>
+          </div>
+
+          <div class="hero-actions">
+            <a href="works.html" class="btn btn-primary btn-lg" data-ga4-event="cta_click" data-ga4-label="hero_view_works">
+              実績を見る &#8594;
+            </a>
+            <a href="contact.html" class="btn btn-secondary btn-lg" data-ga4-event="cta_click" data-ga4-label="hero_contact">
+              お問い合わせ
+            </a>
+          </div>
+        </div>
+
+        <div class="hero-visual">
+          <div class="hero-illustration">
+            <div class="hero-code-block">
+              <div class="code-line"><span class="comment">// GA4 Sandbox Ready</span></div>
+              <div class="code-line"><span class="keyword">const</span> director = {</div>
+              <div class="code-line">&nbsp;&nbsp;name: <span class="string">"tattun"</span>,</div>
+              <div class="code-line">&nbsp;&nbsp;role: <span class="string">"Web Director"</span>,</div>
+              <div class="code-line">&nbsp;&nbsp;experience: <span class="string">"7 years"</span>,</div>
+              <div class="code-line">&nbsp;&nbsp;skills: [</div>
+              <div class="code-line">&nbsp;&nbsp;&nbsp;&nbsp;<span class="string">"Direction"</span>,</div>
+              <div class="code-line">&nbsp;&nbsp;&nbsp;&nbsp;<span class="string">"Analytics"</span>,</div>
+              <div class="code-line">&nbsp;&nbsp;&nbsp;&nbsp;<span class="string">"UX Design"</span></div>
+              <div class="code-line">&nbsp;&nbsp;]</div>
+              <div class="code-line">};</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Featured Works Preview ===== -->
+  <section class="section" id="featured-works">
+    <div class="container">
+      <h2 class="section-title">Featured Works</h2>
+      <p class="section-subtitle">直近のプロジェクトをピックアップ</p>
+
+      <div class="grid-3">
+        <div class="card" data-ga4-event="select_content" data-ga4-content-type="work" data-ga4-item-id="work-001">
+          <div class="card-image">
+            <div class="card-image-placeholder">&#127760;</div>
+          </div>
+          <div class="card-body">
+            <div class="badge">Corporate</div>
+            <h3 class="card-title">大手メーカー コーポレートサイトリニューアル</h3>
+            <p class="card-text">情報設計からデザインディレクション、GA4計測設計まで一貫して担当。PV150%増を達成。</p>
+            <div class="card-tags">
+              <span class="tag">ディレクション</span>
+              <span class="tag">GA4</span>
+              <span class="tag">UI/UX</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" data-ga4-event="select_content" data-ga4-content-type="work" data-ga4-item-id="work-002">
+          <div class="card-image">
+            <div class="card-image-placeholder">&#128722;</div>
+          </div>
+          <div class="card-body">
+            <div class="badge">EC</div>
+            <h3 class="card-title">アパレルブランド ECサイト構築</h3>
+            <p class="card-text">ShopifyベースのEC構築。データ計測基盤の設計により、CVR改善施策を継続的に実施。</p>
+            <div class="card-tags">
+              <span class="tag">EC</span>
+              <span class="tag">Shopify</span>
+              <span class="tag">データ分析</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" data-ga4-event="select_content" data-ga4-content-type="work" data-ga4-item-id="work-003">
+          <div class="card-image">
+            <div class="card-image-placeholder">&#128241;</div>
+          </div>
+          <div class="card-body">
+            <div class="badge">App</div>
+            <h3 class="card-title">ヘルスケアアプリ UI/UXディレクション</h3>
+            <p class="card-text">ユーザーリサーチからプロトタイプ検証、開発チームとの連携まで。DAU200%増に貢献。</p>
+            <div class="card-tags">
+              <span class="tag">アプリ</span>
+              <span class="tag">UXリサーチ</span>
+              <span class="tag">PM</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="text-align: center; margin-top: var(--space-2xl);">
+        <a href="works.html" class="btn btn-outline" data-ga4-event="cta_click" data-ga4-label="view_all_works">
+          すべての実績を見る &#8594;
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== About Preview ===== -->
+  <section class="section" id="about-preview" style="background: var(--color-bg-secondary);">
+    <div class="container">
+      <div class="grid-2" style="align-items: center;">
+        <div>
+          <h2 class="section-title">About Me</h2>
+          <p style="color: var(--color-text-secondary); line-height: 1.9; margin-bottom: var(--space-lg);">
+            新卒でWeb制作会社に入社後、ディレクターとしてキャリアをスタート。
+            コーポレートサイト、ECサイト、アプリ開発など幅広いプロジェクトに携わり、
+            戦略設計・情報設計・品質管理・データ分析を横断的にカバーしてきました。
+          </p>
+          <p style="color: var(--color-text-secondary); line-height: 1.9; margin-bottom: var(--space-xl);">
+            GA4やGTM、Looker Studioを活用したデータドリブンなWebマーケティングが得意分野。
+            「数字で語れるディレクター」を目指しています。
+          </p>
+          <a href="skills.html" class="btn btn-primary" data-ga4-event="cta_click" data-ga4-label="view_skills">
+            スキル詳細を見る
+          </a>
+        </div>
+        <div style="display: flex; justify-content: center;">
+          <div style="width: 280px; height: 280px; border-radius: var(--radius-xl); background: linear-gradient(135deg, var(--color-primary-light), rgba(247, 37, 133, 0.08)); display: flex; align-items: center; justify-content: center; font-size: 6rem;">
+            &#129489;&#8205;&#128187;
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Video Section (for GA4 video tracking) ===== -->
+  <section class="section" id="video-section">
+    <div class="container">
+      <h2 class="section-title">How I Work</h2>
+      <p class="section-subtitle">プロジェクト進行のアプローチを動画でご紹介（GA4動画計測デモ）</p>
+      <div style="max-width: 800px; margin: 0 auto;">
+        <div class="video-wrapper" id="video-wrapper" data-ga4-event="video_start" data-ga4-video-title="how_i_work">
+          <div class="video-play-btn" id="video-play-btn">&#9654;</div>
+          <div style="width:100%; height:100%; background: linear-gradient(135deg, #1a1a2e, #4361ee); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 1.2rem; text-align: center; padding: 2rem;">
+            &#127916; クリックで動画再生を模擬<br>
+            <small style="opacity: 0.7;">（GA4: video_start / video_progress / video_complete イベントが発火）</small>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== CTA Section ===== -->
+  <section class="section" style="background: linear-gradient(135deg, var(--color-primary), var(--color-accent)); color: #fff; text-align: center;">
+    <div class="container">
+      <h2 style="font-family: var(--font-heading); font-size: 2rem; font-weight: 800; margin-bottom: var(--space-md);">
+        プロジェクトのご相談はお気軽に
+      </h2>
+      <p style="opacity: 0.9; margin-bottom: var(--space-xl); font-size: 1.05rem;">
+        Webサイト制作・リニューアル・データ分析のご依頼を承ります。
+      </p>
+      <div style="display: flex; gap: var(--space-md); justify-content: center; flex-wrap: wrap;">
+        <a href="contact.html" class="btn btn-lg" style="background: #fff; color: var(--color-primary); font-weight: 700;" data-ga4-event="cta_click" data-ga4-label="footer_cta_contact">
+          お問い合わせ &#8594;
+        </a>
+        <a href="downloads/tattun_portfolio.pdf" class="btn btn-lg" style="background: rgba(255,255,255,0.15); color: #fff; border: 1px solid rgba(255,255,255,0.3);" data-ga4-event="file_download" data-ga4-file-name="portfolio_pdf" download>
+          &#128196; PDF資料ダウンロード
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Footer ===== -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-brand">
+          <div class="logo">
+            <span class="logo-icon">T</span>
+            tattun
+          </div>
+          <p>Web Director / 7年の経験を活かし、<br>戦略からデータ分析まで伴走します。</p>
+        </div>
+        <div class="footer-links">
+          <h4>Pages</h4>
+          <ul>
+            <li><a href="index.html">Top</a></li>
+            <li><a href="works.html">Works</a></li>
+            <li><a href="skills.html">Skills</a></li>
+            <li><a href="shop.html">Shop</a></li>
+            <li><a href="contact.html">Contact</a></li>
+          </ul>
+        </div>
+        <div class="footer-links">
+          <h4>Services</h4>
+          <ul>
+            <li><a href="#">Webディレクション</a></li>
+            <li><a href="#">UI/UXデザイン</a></li>
+            <li><a href="#">データ分析</a></li>
+            <li><a href="#">GA4設計</a></li>
+          </ul>
+        </div>
+        <div class="footer-links">
+          <h4>Connect</h4>
+          <ul>
+            <li><a href="#" data-ga4-event="outbound_click" data-ga4-destination="twitter">X (Twitter)</a></li>
+            <li><a href="#" data-ga4-event="outbound_click" data-ga4-destination="github">GitHub</a></li>
+            <li><a href="#" data-ga4-event="outbound_click" data-ga4-destination="note">note</a></li>
+            <li><a href="#" data-ga4-event="outbound_click" data-ga4-destination="linkedin">LinkedIn</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2026 tattun. All rights reserved.</p>
+        <div class="social-links">
+          <a href="#" aria-label="Twitter" data-ga4-event="outbound_click" data-ga4-destination="twitter">&#120143;</a>
+          <a href="#" aria-label="GitHub" data-ga4-event="outbound_click" data-ga4-destination="github">&#128025;</a>
+          <a href="#" aria-label="note" data-ga4-event="outbound_click" data-ga4-destination="note">&#9998;</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Toast Container -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- Scroll to Top -->
+  <button class="scroll-top" id="scroll-top" aria-label="ページトップへ">&#8593;</button>
+
+  <!-- GA4 Debug Panel -->
+  <div class="ga4-debug" id="ga4-debug">
+    <button class="ga4-debug-toggle" id="ga4-debug-toggle" title="GA4 Event Debugger">
+      &#128202;
+    </button>
+    <div class="ga4-debug-panel" id="ga4-debug-panel">
+      <div class="ga4-debug-header">
+        <h4><span class="live-dot"></span> GA4 Event Log</h4>
+        <button class="btn btn-sm btn-secondary" id="ga4-debug-clear">Clear</button>
+      </div>
+      <div class="ga4-debug-events" id="ga4-debug-events">
+        <!-- Events will be logged here -->
+      </div>
+    </div>
+  </div>
+
+  <script src="js/main.js"></script>
+  <script src="js/ga4-events.js"></script>
+</body>
+</html>
