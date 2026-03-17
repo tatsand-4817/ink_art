@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="ja" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="GA4 E-commerce Event Sandbox - Digital Products Shop">
+  <title>Shop (EC Demo) | tattun Portfolio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+JP:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+
+  <!-- GA4 Placeholder: Replace G-XXXXXXXXXX with your Measurement ID -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-XXXXXXXXXX');
+  </script>
+</head>
+<body>
+
+  <!-- ===== Header ===== -->
+  <header class="header" id="header">
+    <div class="container">
+      <a href="index.html" class="logo">
+        <span class="logo-icon">T</span>
+        tattun
+      </a>
+
+      <nav class="nav" id="nav">
+        <a href="index.html" class="nav-link">Top</a>
+        <a href="works.html" class="nav-link">Works</a>
+        <a href="skills.html" class="nav-link">Skills</a>
+        <a href="shop.html" class="nav-link active">Shop</a>
+        <a href="contact.html" class="nav-link">Contact</a>
+      </nav>
+
+      <div class="nav-actions">
+        <div class="search-bar">
+          <span class="search-icon">&#128269;</span>
+          <input type="search" id="site-search" placeholder="サイト内検索..." aria-label="サイト内検索">
+        </div>
+        <button class="theme-toggle" id="theme-toggle" aria-label="テーマ切替">
+          &#9790;
+        </button>
+        <button class="cart-counter" id="cart-btn" aria-label="ショッピングカート">
+          &#128722;
+          <span class="count" id="cart-count">0</span>
+        </button>
+        <button class="mobile-menu-btn" id="mobile-menu-btn" aria-label="メニュー">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===== Page Header ===== -->
+  <section class="page-header">
+    <div class="container">
+      <h1>Shop (EC Demo)</h1>
+      <p>GA4 Eコマースイベント計測のサンドボックス環境です</p>
+    </div>
+  </section>
+
+  <!-- ===== Demo Banner ===== -->
+  <section style="background: #fff3cd; border-bottom: 1px solid #ffc107; padding: var(--space-md) 0;">
+    <div class="container">
+      <div style="display: flex; align-items: center; gap: var(--space-md); color: #856404;">
+        <span style="font-size: 1.3rem;">&#9888;</span>
+        <div>
+          <strong>このページはGA4 Eコマースイベントのテスト用デモです。</strong><br>
+          実際の商品販売は行っていません。GA4 の購入イベント・カート管理・チェックアウトフローの計測をテストできます。
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Shop Section ===== -->
+  <section class="section">
+    <div class="container">
+      <h2 class="section-title">デジタル商品</h2>
+      <p class="section-subtitle">Web制作・GA4計測に関するテンプレート・ガイドをご提供します</p>
+
+      <!-- Product Grid -->
+      <div class="grid-4" id="products-grid">
+        <!-- Products will be inserted here by JavaScript -->
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Cart Sidebar ===== -->
+  <div class="cart-overlay" id="cart-overlay"></div>
+  <div class="cart-sidebar" id="cart-sidebar">
+    <div class="cart-header">
+      <h3>ショッピングカート</h3>
+      <button id="cart-close-btn" style="background: none; border: none; font-size: 1.2rem; cursor: pointer; color: var(--color-text-muted);">&#10005;</button>
+    </div>
+
+    <div class="cart-items" id="cart-items">
+      <div style="text-align: center; padding: var(--space-2xl) var(--space-md); color: var(--color-text-muted);">
+        カートは空です
+      </div>
+    </div>
+
+    <div class="cart-footer">
+      <div class="cart-total">
+        <span>合計:</span>
+        <span id="cart-total">¥0</span>
+      </div>
+      <button class="btn btn-primary" style="width: 100%; margin-bottom: var(--space-md);" id="checkout-btn">
+        レジに進む &#8594;
+      </button>
+      <button class="btn btn-outline" style="width: 100%;" id="clear-cart-btn">
+        カートを空にする
+      </button>
+    </div>
+  </div>
+
+  <!-- ===== Checkout Modal ===== -->
+  <div class="modal-overlay" id="checkout-modal">
+    <div class="modal" id="checkout-modal-content">
+      <div class="modal-header">
+        <h3 id="checkout-title">チェックアウト</h3>
+        <button id="checkout-modal-close" style="background: none; border: none; font-size: 1.2rem; cursor: pointer; color: var(--color-text-muted);">&#10005;</button>
+      </div>
+
+      <div class="modal-body">
+        <!-- Checkout Steps Indicator -->
+        <div class="checkout-steps" id="checkout-steps">
+          <div class="checkout-step active" data-step="1">
+            <span class="step-num">1</span>
+            <span>配送情報</span>
+          </div>
+          <div class="checkout-step" data-step="2">
+            <span class="step-num">2</span>
+            <span>支払い方法</span>
+          </div>
+          <div class="checkout-step" data-step="3">
+            <span class="step-num">3</span>
+            <span>確認</span>
+          </div>
+          <div class="checkout-step" data-step="4">
+            <span class="step-num">4</span>
+            <span>完了</span>
+          </div>
+        </div>
+
+        <!-- Step 1: Shipping Info -->
+        <div id="step-1" class="checkout-step-content">
+          <form id="shipping-form">
+            <div class="form-group">
+              <label class="form-label">お名前</label>
+              <input type="text" class="form-input" placeholder="山田太郎" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">メールアドレス</label>
+              <input type="email" class="form-input" placeholder="yamada@example.com" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">住所</label>
+              <input type="text" class="form-input" placeholder="東京都渋谷区" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">電話番号</label>
+              <input type="tel" class="form-input" placeholder="090-xxxx-xxxx" required>
+            </div>
+          </form>
+        </div>
+
+        <!-- Step 2: Payment Method -->
+        <div id="step-2" class="checkout-step-content" style="display: none;">
+          <form id="payment-form">
+            <div class="form-group">
+              <label class="form-label">支払い方法</label>
+              <div style="display: flex; flex-direction: column; gap: var(--space-md);">
+                <label style="display: flex; align-items: center; gap: var(--space-sm); cursor: pointer;">
+                  <input type="radio" name="payment" value="credit" checked> クレジットカード
+                </label>
+                <label style="display: flex; align-items: center; gap: var(--space-sm); cursor: pointer;">
+                  <input type="radio" name="payment" value="bank"> 銀行振込
+                </label>
+                <label style="display: flex; align-items: center; gap: var(--space-sm); cursor: pointer;">
+                  <input type="radio" name="payment" value="other"> その他
+                </label>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">カード番号（シミュレーション）</label>
+              <input type="text" class="form-input" placeholder="1234 5678 9012 3456" value="1234 5678 9012 3456" readonly style="background: var(--color-bg-tertiary);">
+            </div>
+          </form>
+        </div>
+
+        <!-- Step 3: Review -->
+        <div id="step-3" class="checkout-step-content" style="display: none;">
+          <h4 style="margin-bottom: var(--space-md); font-weight: 600;">注文内容確認</h4>
+          <div id="review-items" style="padding: var(--space-md); background: var(--color-bg); border-radius: var(--radius-md); margin-bottom: var(--space-lg);">
+            <!-- Review items will be inserted here -->
+          </div>
+          <div style="padding: var(--space-md); background: var(--color-primary-light); border-radius: var(--radius-md);">
+            <div style="display: flex; justify-content: space-between; margin-bottom: var(--space-sm);">
+              <span>小計:</span>
+              <span id="review-subtotal">¥0</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; font-weight: 700; font-size: 1.1rem; color: var(--color-accent);">
+              <span>合計:</span>
+              <span id="review-total">¥0</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 4: Success -->
+        <div id="step-4" class="checkout-step-content" style="display: none;">
+          <div class="success-message">
+            <div class="success-icon">&#10003;</div>
+            <h4 style="margin-bottom: var(--space-md); font-size: 1.1rem;">注文が完了しました！</h4>
+            <p style="color: var(--color-text-secondary); margin-bottom: var(--space-lg);">
+              ご注文ありがとうございます。このページはGA4計測デモのため、実際の商品発送はありません。
+            </p>
+            <p style="font-size: 0.9rem; color: var(--color-text-muted); margin-bottom: var(--space-lg);">
+              ⏱ <strong>purchase</strong> イベント が GA4 に送信されました。<br>
+              GA4 Debug Panel でイベント詳細を確認できます。
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="checkout-prev-btn" style="display: none;">
+          ← 戻る
+        </button>
+        <button class="btn btn-primary" id="checkout-next-btn">
+          次へ &#8594;
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Footer ===== -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-brand">
+          <div class="logo">
+            <span class="logo-icon">T</span>
+            tattun
+          </div>
+          <p>Web Director / 7年の経験を活かし、<br>戦略からデータ分析まで伴走します。</p>
+        </div>
+        <div class="footer-links">
+          <h4>Pages</h4>
+          <ul>
+            <li><a href="index.html">Top</a></li>
+            <li><a href="works.html">Works</a></li>
+            <li><a href="skills.html">Skills</a></li>
+            <li><a href="shop.html">Shop</a></li>
+            <li><a href="contact.html">Contact</a></li>
+          </ul>
+        </div>
+        <div class="footer-links">
+          <h4>Services</h4>
+          <ul>
+            <li><a href="#">Webディレクション</a></li>
+            <li><a href="#">UI/UXデザイン</a></li>
+            <li><a href="#">データ分析</a></li>
+            <li><a href="#">GA4設計</a></li>
+          </ul>
+        </div>
+        <div class="footer-links">
+          <h4>Connect</h4>
+          <ul>
+            <li><a href="#" data-ga4-event="outbound_click" data-ga4-destination="twitter">X (Twitter)</a></li>
+            <li><a href="#" data-ga4-event="outbound_click" data-ga4-destination="github">GitHub</a></li>
+            <li><a href="#" data-ga4-event="outbound_click" data-ga4-destination="note">note</a></li>
+            <li><a href="#" data-ga4-event="outbound_click" data-ga4-destination="linkedin">LinkedIn</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2026 tattun. All rights reserved.</p>
+        <div class="social-links">
+          <a href="#" aria-label="Twitter" data-ga4-event="outbound_click" data-ga4-destination="twitter">&#120143;</a>
+          <a href="#" aria-label="GitHub" data-ga4-event="outbound_click" data-ga4-destination="github">&#128025;</a>
+          <a href="#" aria-label="note" data-ga4-event="outbound_click" data-ga4-destination="note">&#9998;</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Toast Container -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- Scroll to Top -->
+  <button class="scroll-top" id="scroll-top" aria-label="ページトップへ">&#8593;</button>
+
+  <!-- GA4 Debug Panel -->
+  <div class="ga4-debug" id="ga4-debug">
+    <button class="ga4-debug-toggle" id="ga4-debug-toggle" title="GA4 Event Debugger">
+      &#128202;
+    </button>
+    <div class="ga4-debug-panel" id="ga4-debug-panel">
+      <div class="ga4-debug-header">
+        <h4><span class="live-dot"></span> GA4 Event Log</h4>
+        <button class="btn btn-sm btn-secondary" id="ga4-debug-clear">Clear</button>
+      </div>
+      <div class="ga4-debug-events" id="ga4-debug-events">
+        <!-- Events will be logged here -->
+      </div>
+    </div>
+  </div>
+
+  <script src="js/main.js"></script>
+  <script src="js/ga4-events.js"></script>
+  <script src="js/ecommerce.js"></script>
+
+  <!-- E-commerce Shop Initialization -->
+  <script>
+    // Product Data
+    const products = [
+      {
+        id: 'prod-001',
+        name: 'Web制作テンプレート',
+        description: 'レスポンシブ対応のモダンWebサイトテンプレート',
+        category: 'template',
+        price: 4980,
+        emoji: '🎨'
+      },
+      {
+        id: 'prod-002',
+        name: 'GA4設定ガイド（PDF）',
+        description: '初心者向けGA4設定・運用マニュアル（50ページ）',
+        category: 'guide',
+        price: 2980,
+        emoji: '📊'
+      },
+      {
+        id: 'prod-003',
+        name: 'UXチェックリスト',
+        description: 'UI/UX改善のための総合チェックリスト（Excel）',
+        category: 'checklist',
+        price: 1980,
+        emoji: '✓'
+      },
+      {
+        id: 'prod-004',
+        name: '情報設計ワークシート',
+        description: 'サイト構造設計・ユーザー体験最適化のワークシート',
+        category: 'worksheet',
+        price: 3480,
+        emoji: '🗂'
+      },
+      {
+        id: 'prod-005',
+        name: 'GTM実装チュートリアル',
+        description: 'Google Tag Manager導入・カスタムイベント設定動画',
+        category: 'video',
+        price: 5980,
+        emoji: '🎥'
+      },
+      {
+        id: 'prod-006',
+        name: 'データ分析テンプレート',
+        description: 'Google Sheets用のGA4データ分析テンプレート',
+        category: 'template',
+        price: 3980,
+        emoji: '📈'
+      },
+      {
+        id: 'prod-007',
+        name: 'Webディレクション実例集',
+        description: 'Web制作プロセス・実績事例・ベストプラクティス集',
+        category: 'guide',
+        price: 4480,
+        emoji: '📚'
+      },
+      {
+        id: 'prod-008',
+        name: 'SEO最適化チェックリスト',
+        description: '技術SEO・コンテンツSEOの完全チェックリスト',
+        category: 'checklist',
+        price: 2480,
+        emoji: '🔍'
+      }
+    ];
+
+    // Initialize Shop
+    document.addEventListener('DOMContentLoaded', () => {
+      renderProducts(products);
+      initializeCart();
+      setupEventListeners();
+    });
+
+    function renderProducts(productList) {
+      const grid = document.getElementById('products-grid');
+      grid.innerHTML = productList.map(product => `
+        <div class="product-card card" data-product-id="${product.id}">
+          <div class="card-image">
+            <div class="card-image-placeholder">${product.emoji}</div>
+          </div>
+          <div class="card-body">
+            <div class="badge">${product.category}</div>
+            <h3 class="card-title">${product.name}</h3>
+            <p class="card-text">${product.description}</p>
+            <div class="product-price">¥${product.price.toLocaleString()}</div>
+            <button class="btn btn-primary" style="width: 100%; margin-top: var(--space-md);"
+              data-product-id="${product.id}"
+              data-product-name="${product.name}"
+              data-product-price="${product.price}"
+              data-product-category="${product.category}"
+              onclick="addToCart(event)">
+              カートに追加
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function addToCart(event) {
+      event.preventDefault();
+      const btn = event.target;
+      const productId = btn.dataset.productId;
+      const productName = btn.dataset.productName;
+      const productPrice = parseInt(btn.dataset.productPrice);
+      const productCategory = btn.dataset.productCategory;
+
+      // Fire GA4 add_to_cart event
+      gtag('event', 'add_to_cart', {
+        currency: 'JPY',
+        items: [{
+          item_id: productId,
+          item_name: productName,
+          item_category: productCategory,
+          price: productPrice,
+          quantity: 1
+        }]
+      });
+
+      // Add to local cart
+      let cart = JSON.parse(localStorage.getItem('cart') || '[]');
+      const existingItem = cart.find(item => item.id === productId);
+
+      if (existingItem) {
+        existingItem.quantity += 1;
+      } else {
+        cart.push({
+          id: productId,
+          name: productName,
+          price: productPrice,
+          category: productCategory,
+          quantity: 1
+        });
+      }
+
+      localStorage.setItem('cart', JSON.stringify(cart));
+      updateCartUI();
+      showToast('カートに追加しました', 'success');
+
+      // Log to debug panel
+      logGA4Event('add_to_cart', {
+        item_name: productName,
+        item_id: productId,
+        price: productPrice
+      });
+    }
+
+    function initializeCart() {
+      updateCartUI();
+    }
+
+    function updateCartUI() {
+      const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+      const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
+      document.getElementById('cart-count').textContent = cartCount;
+
+      const cartItemsContainer = document.getElementById('cart-items');
+
+      if (cart.length === 0) {
+        cartItemsContainer.innerHTML = '<div style="text-align: center; padding: var(--space-2xl) var(--space-md); color: var(--color-text-muted);">カートは空です</div>';
+        document.getElementById('cart-total').textContent = '¥0';
+      } else {
+        cartItemsContainer.innerHTML = cart.map(item => `
+          <div class="cart-item">
+            <div class="cart-item-image">${products.find(p => p.id === item.id)?.emoji || '🛍'}</div>
+            <div class="cart-item-info">
+              <div class="cart-item-name">${item.name}</div>
+              <div class="cart-item-price">¥${item.price.toLocaleString()}</div>
+              <div class="cart-item-qty">
+                <button onclick="updateQty('${item.id}', -1)">−</button>
+                <span style="min-width: 30px; text-align: center;">${item.quantity}</span>
+                <button onclick="updateQty('${item.id}', 1)">+</button>
+                <button class="cart-item-remove" onclick="removeFromCart('${item.id}')">削除</button>
+              </div>
+            </div>
+          </div>
+        `).join('');
+
+        const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        document.getElementById('cart-total').textContent = `¥${total.toLocaleString()}`;
+      }
+    }
+
+    function updateQty(productId, change) {
+      let cart = JSON.parse(localStorage.getItem('cart') || '[]');
+      const item = cart.find(i => i.id === productId);
+      if (item) {
+        item.quantity += change;
+        if (item.quantity <= 0) {
+          cart = cart.filter(i => i.id !== productId);
+        }
+      }
+      localStorage.setItem('cart', JSON.stringify(cart));
+      updateCartUI();
+    }
+
+    function removeFromCart(productId) {
+      let cart = JSON.parse(localStorage.getItem('cart') || '[]');
+      cart = cart.filter(item => item.id !== productId);
+      localStorage.setItem('cart', JSON.stringify(cart));
+      updateCartUI();
+      showToast('カートから削除しました', 'info');
+    }
+
+    function setupEventListeners() {
+      // Cart sidebar toggle
+      document.getElementById('cart-btn').addEventListener('click', () => {
+        document.getElementById('cart-overlay').classList.add('open');
+        document.getElementById('cart-sidebar').classList.add('open');
+      });
+
+      document.getElementById('cart-overlay').addEventListener('click', closeCart);
+      document.getElementById('cart-close-btn').addEventListener('click', closeCart);
+
+      function closeCart() {
+        document.getElementById('cart-overlay').classList.remove('open');
+        document.getElementById('cart-sidebar').classList.remove('open');
+      }
+
+      // Checkout flow
+      document.getElementById('checkout-btn').addEventListener('click', openCheckout);
+      document.getElementById('checkout-modal-close').addEventListener('click', closeCheckout);
+      document.getElementById('checkout-next-btn').addEventListener('click', nextCheckoutStep);
+      document.getElementById('checkout-prev-btn').addEventListener('click', prevCheckoutStep);
+
+      document.getElementById('clear-cart-btn').addEventListener('click', () => {
+        if (confirm('カートを空にしますか？')) {
+          localStorage.setItem('cart', '[]');
+          updateCartUI();
+          closeCart();
+          showToast('カートを空にしました', 'info');
+        }
+      });
+    }
+
+    let currentStep = 1;
+
+    function openCheckout() {
+      const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+      if (cart.length === 0) {
+        showToast('カートに商品がありません', 'warning');
+        return;
+      }
+
+      // Fire begin_checkout event
+      gtag('event', 'begin_checkout', {
+        currency: 'JPY',
+        items: cart.map(item => ({
+          item_id: item.id,
+          item_name: item.name,
+          item_category: item.category,
+          price: item.price,
+          quantity: item.quantity
+        }))
+      });
+
+      logGA4Event('begin_checkout', {
+        items_count: cart.length,
+        value: cart.reduce((sum, item) => sum + (item.price * item.quantity), 0)
+      });
+
+      currentStep = 1;
+      showCheckoutStep(1);
+      document.getElementById('checkout-modal').classList.add('open');
+      closeCart();
+    }
+
+    function closeCheckout() {
+      document.getElementById('checkout-modal').classList.remove('open');
+    }
+
+    function showCheckoutStep(step) {
+      // Hide all steps
+      document.querySelectorAll('.checkout-step-content').forEach(el => el.style.display = 'none');
+      document.querySelectorAll('.checkout-step').forEach(el => {
+        el.classList.remove('active', 'completed');
+        if (parseInt(el.dataset.step) < step) el.classList.add('completed');
+        if (parseInt(el.dataset.step) === step) el.classList.add('active');
+      });
+
+      // Show current step
+      document.getElementById(`step-${step}`).style.display = 'block';
+
+      // Update buttons
+      const prevBtn = document.getElementById('checkout-prev-btn');
+      const nextBtn = document.getElementById('checkout-next-btn');
+
+      prevBtn.style.display = step === 1 ? 'none' : 'inline-flex';
+
+      if (step === 4) {
+        nextBtn.textContent = '完了';
+        nextBtn.disabled = true;
+      } else if (step === 3) {
+        nextBtn.textContent = '注文確定';
+      } else {
+        nextBtn.textContent = '次へ →';
+        nextBtn.disabled = false;
+      }
+
+      currentStep = step;
+    }
+
+    function nextCheckoutStep() {
+      const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+
+      if (currentStep === 3) {
+        // Process purchase
+        const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+
+        // Fire purchase event
+        gtag('event', 'purchase', {
+          currency: 'JPY',
+          transaction_id: 'txn_' + Date.now(),
+          value: total,
+          items: cart.map(item => ({
+            item_id: item.id,
+            item_name: item.name,
+            item_category: item.category,
+            price: item.price,
+            quantity: item.quantity
+          }))
+        });
+
+        logGA4Event('purchase', {
+          transaction_id: 'txn_' + Date.now(),
+          value: total,
+          items_count: cart.length
+        });
+
+        // Clear cart
+        localStorage.setItem('cart', '[]');
+        updateCartUI();
+
+        showCheckoutStep(4);
+
+        // Auto-close after 5 seconds
+        setTimeout(() => {
+          closeCheckout();
+          showToast('注文が完了しました！GA4 Debug Panel でイベントを確認してください。', 'success');
+        }, 5000);
+      } else if (currentStep < 3) {
+        showCheckoutStep(currentStep + 1);
+
+        // Update review items at step 3
+        if (currentStep === 3) {
+          const reviewItems = document.getElementById('review-items');
+          reviewItems.innerHTML = cart.map(item => `
+            <div style="display: flex; justify-content: space-between; margin-bottom: var(--space-sm); padding-bottom: var(--space-sm); border-bottom: 1px solid var(--color-border);">
+              <span>${item.name} × ${item.quantity}</span>
+              <span>¥${(item.price * item.quantity).toLocaleString()}</span>
+            </div>
+          `).join('');
+
+          const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+          document.getElementById('review-subtotal').textContent = `¥${total.toLocaleString()}`;
+          document.getElementById('review-total').textContent = `¥${total.toLocaleString()}`;
+        }
+      }
+    }
+
+    function prevCheckoutStep() {
+      if (currentStep > 1) {
+        showCheckoutStep(currentStep - 1);
+      }
+    }
+
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+      toast.textContent = message;
+      container.appendChild(toast);
+
+      setTimeout(() => {
+        toast.remove();
+      }, 3000);
+    }
+
+    function logGA4Event(eventName, params) {
+      // Log to GA4 Debug Panel (delegated to ga4-events.js)
+      if (window.logGA4EventToDebugPanel) {
+        window.logGA4EventToDebugPanel(eventName, params);
+      }
+    }
+  </script>
+
+</body>
+</html>
