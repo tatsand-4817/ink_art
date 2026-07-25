@@ -47,6 +47,80 @@ export function inkDeposit(color: RGB, amount: number): [number, number, number,
   ];
 }
 
+export interface HSL {
+  /** 色相 0..360 */
+  h: number;
+  /** 彩度 0..100 */
+  s: number;
+  /** 明度 0..100 */
+  l: number;
+}
+
+function clamp01(value: number): number {
+  return Math.min(Math.max(value, 0), 1);
+}
+
+export function rgbToHsl(color: RGB): HSL {
+  const { r, g, b } = color;
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  const lightness = (max + min) / 2;
+  const delta = max - min;
+
+  // 無彩色では色相が定義できない。呼び出し側で直前の色相を保つ
+  if (delta === 0) return { h: 0, s: 0, l: lightness * 100 };
+
+  let hue: number;
+  if (max === r) hue = ((g - b) / delta) % 6;
+  else if (max === g) hue = (b - r) / delta + 2;
+  else hue = (r - g) / delta + 4;
+  hue *= 60;
+  if (hue < 0) hue += 360;
+
+  return {
+    h: hue,
+    s: (delta / (1 - Math.abs(2 * lightness - 1))) * 100,
+    l: lightness * 100,
+  };
+}
+
+export function hslToRgb(hsl: HSL): RGB {
+  const hue = ((hsl.h % 360) + 360) % 360;
+  const saturation = clamp01(hsl.s / 100);
+  const lightness = clamp01(hsl.l / 100);
+
+  const chroma = (1 - Math.abs(2 * lightness - 1)) * saturation;
+  const second = chroma * (1 - Math.abs(((hue / 60) % 2) - 1));
+  const offset = lightness - chroma / 2;
+
+  let triplet: [number, number, number];
+  switch (Math.floor(hue / 60) % 6) {
+    case 0:
+      triplet = [chroma, second, 0];
+      break;
+    case 1:
+      triplet = [second, chroma, 0];
+      break;
+    case 2:
+      triplet = [0, chroma, second];
+      break;
+    case 3:
+      triplet = [0, second, chroma];
+      break;
+    case 4:
+      triplet = [second, 0, chroma];
+      break;
+    default:
+      triplet = [chroma, 0, second];
+  }
+
+  return {
+    r: triplet[0] + offset,
+    g: triplet[1] + offset,
+    b: triplet[2] + offset,
+  };
+}
+
 export function hexToRgb(hex: string): RGB | null {
   const match = /^#?([\da-f]{3}|[\da-f]{6})$/i.exec(hex.trim());
   if (!match) return null;

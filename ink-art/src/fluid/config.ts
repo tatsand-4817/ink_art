@@ -72,13 +72,3 @@ export const DEFAULT_SIM_CONFIG: SimConfig = {
  */
 export const INK_AMOUNT_RANGE = { min: 0.1, max: 1.5, step: 0.05 } as const;
 
-/**
- * 台紙(水)の色。
- * F-4 の正式なプリセット + カスタム指定までの暫定で、いまは白と黒の 2 択。
- */
-export const WATER_PRESETS = [
-  { name: '白', hex: '#ffffff' },
-  { name: '黒', hex: '#0f1114' },
-] as const;
-
-export const DEFAULT_WATER_COLOR = WATER_PRESETS[0].hex;

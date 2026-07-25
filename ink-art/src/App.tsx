@@ -1,21 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { ColorSheet } from './components/ColorSheet.tsx';
 import { InkCanvas, type InkCanvasHandle } from './components/InkCanvas.tsx';
 import { hexToRgb, type RGB } from './fluid/color.ts';
-import { DEFAULT_WATER_COLOR, INK_AMOUNT_RANGE, WATER_PRESETS } from './fluid/config.ts';
-
-/**
- * 暫定パレット。
- * 正式なプリセット定義(モノクロ/ビビッド/パステル/和色)は彩さんの確定待ち。
- * 白と黒どちらの台紙でも成立するよう、明度を揃えた高彩度の色で組んでいる。
- */
-const PROVISIONAL_INKS: ReadonlyArray<{ name: string; hex: string }> = [
-  { name: '白', hex: '#ffffff' },
-  { name: '空', hex: '#35b6f0' },
-  { name: '珊瑚', hex: '#ff6b5b' },
-  { name: '若草', hex: '#7ed957' },
-  { name: '向日葵', hex: '#ffc93c' },
-  { name: '藤', hex: '#b07ff0' },
-];
+import { DEFAULT_INK_HEX, DEFAULT_WATER_HEX, INK_PRESETS, isDarkHex } from './palette.ts';
 
 function requireRgb(hex: string): RGB {
   const rgb = hexToRgb(hex);
@@ -24,16 +11,17 @@ function requireRgb(hex: string): RGB {
 }
 
 export default function App() {
-  const [inkHex, setInkHex] = useState(PROVISIONAL_INKS[1].hex);
-  const [waterHex, setWaterHex] = useState<string>(DEFAULT_WATER_COLOR);
+  const [inkHex, setInkHex] = useState(DEFAULT_INK_HEX);
+  const [waterHex, setWaterHex] = useState(DEFAULT_WATER_HEX);
+  const [inkSetIndex, setInkSetIndex] = useState(0);
   const [inkAmount, setInkAmount] = useState(1);
-  const [panelOpen, setPanelOpen] = useState(false);
+  const [sheetOpen, setSheetOpen] = useState(false);
   const [hintVisible, setHintVisible] = useState(true);
   const canvasRef = useRef<InkCanvasHandle>(null);
 
   const inkColor = useMemo(() => requireRgb(inkHex), [inkHex]);
   const waterColor = useMemo(() => requireRgb(waterHex), [waterHex]);
-  const isDarkWater = waterHex !== WATER_PRESETS[0].hex;
+  const isDarkWater = isDarkHex(waterHex);
 
   // 初回のヒントは、触られるか少し経てば引っ込める
   useEffect(() => {
@@ -57,66 +45,44 @@ export default function App() {
         水面をタップ、なぞると流れができる
       </p>
 
-      {panelOpen && (
-        <div className="panel">
-          <label className="panel-row">
-            <span className="panel-label">インクの量</span>
-            <input
-              type="range"
-              min={INK_AMOUNT_RANGE.min}
-              max={INK_AMOUNT_RANGE.max}
-              step={INK_AMOUNT_RANGE.step}
-              value={inkAmount}
-              onChange={(event) => setInkAmount(Number(event.target.value))}
-            />
-            <span className="panel-value">{Math.round(inkAmount * 100)}%</span>
-          </label>
-
-          <div className="panel-row">
-            <span className="panel-label">台紙</span>
-            <div className="waters" role="radiogroup" aria-label="台紙の色">
-              {WATER_PRESETS.map((water) => (
-                <button
-                  key={water.hex}
-                  type="button"
-                  role="radio"
-                  aria-checked={water.hex === waterHex}
-                  aria-label={`台紙 ${water.name}`}
-                  title={`台紙 ${water.name}`}
-                  className={`water${water.hex === waterHex ? ' is-selected' : ''}`}
-                  style={{ backgroundColor: water.hex }}
-                  onClick={() => setWaterHex(water.hex)}
-                />
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
+      <ColorSheet
+        open={sheetOpen}
+        onClose={() => setSheetOpen(false)}
+        inkHex={inkHex}
+        onInkHexChange={setInkHex}
+        waterHex={waterHex}
+        onWaterHexChange={setWaterHex}
+        inkSetIndex={inkSetIndex}
+        onInkSetChange={setInkSetIndex}
+        inkAmount={inkAmount}
+        onInkAmountChange={setInkAmount}
+      />
 
       <div className="toolbar">
+        {/* よく使う色はワンタップで届くよう、選択中のテーマだけバーに出す */}
         <div className="swatches" role="radiogroup" aria-label="インクの色">
-          {PROVISIONAL_INKS.map((ink) => (
+          {INK_PRESETS[inkSetIndex].swatches.map((swatch) => (
             <button
-              key={ink.hex}
+              key={swatch.hex}
               type="button"
               role="radio"
-              aria-checked={ink.hex === inkHex}
-              aria-label={ink.name}
-              title={ink.name}
-              className={`swatch${ink.hex === inkHex ? ' is-selected' : ''}`}
-              style={{ backgroundColor: ink.hex }}
-              onClick={() => setInkHex(ink.hex)}
+              aria-checked={swatch.hex === inkHex}
+              aria-label={swatch.name}
+              title={swatch.name}
+              className={`swatch${swatch.hex === inkHex ? ' is-selected' : ''}`}
+              style={{ backgroundColor: swatch.hex }}
+              onClick={() => setInkHex(swatch.hex)}
             />
           ))}
         </div>
 
         <button
           type="button"
-          className={`action${panelOpen ? ' is-active' : ''}`}
-          aria-expanded={panelOpen}
-          onClick={() => setPanelOpen((open) => !open)}
+          className={`action${sheetOpen ? ' is-active' : ''}`}
+          aria-expanded={sheetOpen}
+          onClick={() => setSheetOpen((open) => !open)}
         >
-          調整
+          色
         </button>
 
         <button type="button" className="action" onClick={() => canvasRef.current?.clear()}>
