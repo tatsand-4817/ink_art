@@ -24,18 +24,26 @@ export function toLinearTriplet(color: RGB): [number, number, number] {
 }
 
 /**
- * インク色を Beer–Lambert の吸光度に変換する。
+ * インク色を、染料場へ加算する 1 回分の量に変換する。
  *
- * 描画側は `水の色 * exp(-吸光度)` で合成するので、吸光度は染料場の上で
- * 単純な加算になり、2 色が重なると透過率の積 = 減法混色になる。
- * (青 + 黄 → 緑。加算 RGB でやると白っぽく濁るのでこの形にしている)
+ * 返すのは `[吸光度 R, G, B, 顔料の量]` の 4 成分。
+ *
+ * - **吸光度** は Beer–Lambert の吸光度。描画側が `exp(-吸光度)` で透過率に直すので、
+ *   染料場の上では単純な加算 = 透過率の乗算 = 減法混色になる。
+ *   (青 + 黄 → 緑。加算 RGB でやると白っぽく濁るのでこの形にしている)
+ * - **顔料の量** は「どれだけインクが乗っているか」。吸光度と別に持つ理由は白インク。
+ *   白は何も吸収しないので吸光度が全チャンネル 0 になり、量を別に数えないと
+ *   「インクが無い」と区別が付かず、黒い台紙の上に置けない。
+ *
+ * 描画側はこの 2 つから、台紙に透けた色と顔料そのものの色を作り分ける。
  */
-export function inkAbsorbance(color: RGB, strength: number): [number, number, number] {
+export function inkDeposit(color: RGB, amount: number): [number, number, number, number] {
   const linear = toLinearTriplet(color);
   return [
-    -Math.log(Math.max(linear[0], MIN_TRANSMITTANCE)) * strength,
-    -Math.log(Math.max(linear[1], MIN_TRANSMITTANCE)) * strength,
-    -Math.log(Math.max(linear[2], MIN_TRANSMITTANCE)) * strength,
+    -Math.log(Math.max(linear[0], MIN_TRANSMITTANCE)) * amount,
+    -Math.log(Math.max(linear[1], MIN_TRANSMITTANCE)) * amount,
+    -Math.log(Math.max(linear[2], MIN_TRANSMITTANCE)) * amount,
+    amount,
   ];
 }
 

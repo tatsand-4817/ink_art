@@ -33,6 +33,11 @@ export interface SimConfig {
    * 薄まりは広がりに任せる
    */
   inkStrength: number;
+  /**
+   * 顔料 1 単位あたりの被覆の強さ。
+   * 上げるほど台紙が透けなくなり、インク自身の色が前に出る
+   */
+  coverage: number;
   /** 濃度勾配による陰影付け */
   shading: boolean;
   /** devicePixelRatio の上限 */
@@ -52,9 +57,18 @@ export const DEFAULT_SIM_CONFIG: SimConfig = {
   dropImpulse: 0.0055,
   splatForce: 5200,
   inkStrength: 1,
+  coverage: 1.6,
   shading: true,
   maxPixelRatio: 2,
 };
 
-/** 台紙(水)のデフォルト色: 白〜わずかに青みがかった水色 */
-export const DEFAULT_WATER_COLOR = '#eef4f7';
+/**
+ * 台紙(水)の色。
+ * F-4 の正式なプリセット + カスタム指定までの暫定で、いまは白と黒の 2 択。
+ */
+export const WATER_PRESETS = [
+  { name: '白', hex: '#ffffff' },
+  { name: '黒', hex: '#0f1114' },
+] as const;
+
+export const DEFAULT_WATER_COLOR = WATER_PRESETS[0].hex;

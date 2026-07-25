@@ -1,4 +1,4 @@
-import { inkAbsorbance, toLinearTriplet, type RGB } from './color.ts';
+import { inkDeposit, toLinearTriplet, type RGB } from './color.ts';
 import { DEFAULT_SIM_CONFIG, type SimConfig } from './config.ts';
 import { createGLResources, type GLResources, type TextureFormat } from './context.ts';
 import {
@@ -44,8 +44,8 @@ interface QueuedSplat {
   hardness: number;
   /** 速度場に加える量。0 なら速度パスを飛ばす */
   velocity: [number, number] | null;
-  /** 染料場に加える吸光度。null なら染料パスを飛ばす */
-  absorbance: [number, number, number] | null;
+  /** 染料場に加える量 `[吸光度 R, G, B, 顔料の量]`。null なら染料パスを飛ばす */
+  deposit: [number, number, number, number] | null;
 }
 
 interface Resolution {
@@ -159,7 +159,7 @@ export class InkSimulation {
       radius: splatRadius * 1.5,
       hardness: 0,
       velocity: [splat.dx * splatForce, splat.dy * splatForce],
-      absorbance: null,
+      deposit: null,
     });
 
     // 一筆の濃さは「動いた距離」で決める。
@@ -176,7 +176,7 @@ export class InkSimulation {
       radius: splatRadius,
       hardness: 1,
       velocity: null,
-      absorbance: inkAbsorbance(splat.color, inkStrength * density),
+      deposit: inkDeposit(splat.color, inkStrength * density),
     });
   }
 
@@ -195,7 +195,7 @@ export class InkSimulation {
       radius: splatRadius,
       hardness: 1,
       velocity: null,
-      absorbance: inkAbsorbance(color, inkStrength),
+      deposit: inkDeposit(color, inkStrength),
     });
 
     const petals = 8;
@@ -211,7 +211,7 @@ export class InkSimulation {
         hardness: 0,
         // 速度は画面ピクセル基準で等方なので、向きはそのまま渡してよい
         velocity: [ux * dropImpulse * splatForce, uy * dropImpulse * splatForce],
-        absorbance: null,
+        deposit: null,
       });
     }
   }
@@ -220,7 +220,7 @@ export class InkSimulation {
     const gl = this.gl;
     for (const target of [this.dye.read, this.dye.write, this.velocity.read, this.velocity.write, this.pressure.read, this.pressure.write]) {
       gl.bindFramebuffer(gl.FRAMEBUFFER, target.fbo);
-      gl.clearColor(0, 0, 0, 1);
+      gl.clearColor(0, 0, 0, 0);
       gl.clear(gl.COLOR_BUFFER_BIT);
     }
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
@@ -409,19 +409,20 @@ export class InkSimulation {
 
       if (splat.velocity) {
         gl.uniform1i(program.uniforms.uTarget, this.velocity.read.attach(0));
-        gl.uniform3f(program.uniforms.uValue, splat.velocity[0], splat.velocity[1], 0);
+        gl.uniform4f(program.uniforms.uValue, splat.velocity[0], splat.velocity[1], 0, 0);
         this.blit(this.velocity.write);
         this.velocity.swap();
       }
 
-      if (splat.absorbance) {
+      if (splat.deposit) {
         // 染料場には吸光度を加算する。重なれば自動的に減法混色になる(F-5)
         gl.uniform1i(program.uniforms.uTarget, this.dye.read.attach(0));
-        gl.uniform3f(
+        gl.uniform4f(
           program.uniforms.uValue,
-          splat.absorbance[0],
-          splat.absorbance[1],
-          splat.absorbance[2],
+          splat.deposit[0],
+          splat.deposit[1],
+          splat.deposit[2],
+          splat.deposit[3],
         );
         this.blit(this.dye.write);
         this.dye.swap();
@@ -528,6 +529,7 @@ export class InkSimulation {
     this.displayProgram.bind();
     gl.uniform2f(this.displayProgram.uniforms.texelSize, this.dye.texelSizeX, this.dye.texelSizeY);
     gl.uniform1i(this.displayProgram.uniforms.uDye, this.dye.read.attach(0));
+    gl.uniform1f(this.displayProgram.uniforms.uCoverage, this.config.coverage);
     gl.uniform3f(
       this.displayProgram.uniforms.uWaterColor,
       this.waterColor[0],

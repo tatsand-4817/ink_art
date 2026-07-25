@@ -18,7 +18,7 @@ body,
 
 body {
   overscroll-behavior: none;
-  background: #eef4f7;
+  background: #ffffff;
 }
 
 .app {
@@ -26,6 +26,27 @@ body {
   /* iframe に埋め込まれても高さが潰れないよう、ビューポート基準で確保する */
   height: 100dvh;
   width: 100%;
+  /* セーフエリアの外側が台紙と食い違わないように合わせておく */
+  background: #ffffff;
+
+  /* 操作バーは台紙の明るさに合わせて反転させる */
+  --chrome-surface: rgb(255 255 255 / 0.72);
+  --chrome-ink: #33414d;
+  --chrome-line: rgb(15 35 55 / 0.12);
+  --chrome-fill: rgb(15 35 55 / 0.06);
+  --chrome-fill-active: rgb(15 35 55 / 0.12);
+  --chrome-shadow: 0 2px 16px rgb(15 35 55 / 0.12);
+}
+
+.app.is-dark-water {
+  background: #0f1114;
+
+  --chrome-surface: rgb(28 32 38 / 0.72);
+  --chrome-ink: #dbe3ea;
+  --chrome-line: rgb(255 255 255 / 0.18);
+  --chrome-fill: rgb(255 255 255 / 0.1);
+  --chrome-fill-active: rgb(255 255 255 / 0.2);
+  --chrome-shadow: 0 2px 16px rgb(0 0 0 / 0.4);
 }
 
 /* 初回だけ出す操作のヒント。アート体験の邪魔にならないよう静かに消す */
@@ -37,8 +58,8 @@ body {
   margin: 0;
   padding: 0.45rem 1rem;
   border-radius: 999px;
-  background: rgb(255 255 255 / 0.6);
-  color: #55636e;
+  background: var(--chrome-surface);
+  color: var(--chrome-ink);
   font-size: 0.8rem;
   letter-spacing: 0.04em;
   white-space: nowrap;
@@ -75,7 +96,7 @@ body {
   place-items: center;
   height: 100%;
   padding: 2rem;
-  color: #33414d;
+  color: var(--chrome-ink);
   text-align: center;
   line-height: 1.8;
 }
@@ -87,46 +108,72 @@ body {
   transform: translateX(-50%);
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  padding: 0.5rem 0.75rem;
+  gap: 0.65rem;
+  max-width: calc(100vw - 1.5rem);
+  padding: 0.5rem 0.7rem;
   border-radius: 999px;
-  background: rgb(255 255 255 / 0.72);
+  background: var(--chrome-surface);
   backdrop-filter: blur(12px);
-  box-shadow: 0 2px 16px rgb(15 35 55 / 0.12);
+  box-shadow: var(--chrome-shadow);
 }
 
-.swatches {
+.swatches,
+.waters {
   display: flex;
-  gap: 0.4rem;
+  gap: 0.35rem;
 }
 
-.swatch {
-  width: 2rem;
-  height: 2rem;
+/* インクは丸、台紙は角丸の四角。形で役割を分ける */
+.swatch,
+.water {
   padding: 0;
   border: 2px solid transparent;
-  border-radius: 50%;
-  box-shadow: inset 0 0 0 1px rgb(15 35 55 / 0.12);
+  box-shadow: inset 0 0 0 1px var(--chrome-line);
   cursor: pointer;
   transition: transform 120ms ease;
 }
 
-.swatch.is-selected {
-  border-color: #33414d;
-  transform: scale(1.12);
+.swatch {
+  width: 1.85rem;
+  height: 1.85rem;
+  border-radius: 50%;
+}
+
+.water {
+  width: 1.35rem;
+  height: 1.85rem;
+  border-radius: 0.3rem;
+}
+
+.swatch.is-selected,
+.water.is-selected {
+  border-color: var(--chrome-ink);
+  transform: scale(1.1);
+}
+
+.swatch:focus-visible,
+.water:focus-visible,
+.action:focus-visible {
+  outline: 2px solid var(--chrome-ink);
+  outline-offset: 2px;
+}
+
+.waters {
+  padding-left: 0.65rem;
+  border-left: 1px solid var(--chrome-line);
 }
 
 .action {
-  padding: 0.4rem 0.9rem;
+  padding: 0.4rem 0.85rem;
   border: 0;
   border-radius: 999px;
-  background: rgb(15 35 55 / 0.06);
-  color: #33414d;
+  background: var(--chrome-fill);
+  color: var(--chrome-ink);
   font-size: 0.85rem;
   white-space: nowrap;
   cursor: pointer;
 }
 
 .action:active {
-  background: rgb(15 35 55 / 0.12);
+  background: var(--chrome-fill-active);
 }

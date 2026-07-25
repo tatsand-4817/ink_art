@@ -55,7 +55,8 @@ export function createFBO(
   gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
   gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
   gl.viewport(0, 0, width, height);
-  gl.clearColor(0, 0, 0, 1);
+  // 染料場はアルファに顔料の量を持つので、必ず 0 で初期化する
+  gl.clearColor(0, 0, 0, 0);
   gl.clear(gl.COLOR_BUFFER_BIT);
   gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 

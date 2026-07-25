@@ -67,7 +67,7 @@ in vec2 vUv;
 out vec4 fragColor;
 uniform sampler2D uTarget;
 uniform float aspectRatio;
-uniform vec3 uValue;
+uniform vec4 uValue;
 uniform vec2 uPoint;
 uniform float uRadius;
 /** 0 = なだらかなガウス(水流向き) / 1 = 芯のある円盤(インクの粒向き) */
@@ -82,8 +82,7 @@ void main () {
   // 中心はほぼ一様、外縁で一気に落とす。実際のインク滴の輪郭に近い
   float hard = smoothstep(1.0, 0.3, d);
 
-  vec3 base = texture(uTarget, vUv).xyz;
-  fragColor = vec4(base + mix(soft, hard, uHardness) * uValue, 1.0);
+  fragColor = texture(uTarget, vUv) + mix(soft, hard, uHardness) * uValue;
 }
 `;
 
@@ -146,12 +145,14 @@ uniform sampler2D uTexture;
 uniform float uAmount;
 
 void main () {
-  vec3 center = texture(uTexture, vUv).rgb;
-  vec3 neighbours = texture(uTexture, vL).rgb
-                  + texture(uTexture, vR).rgb
-                  + texture(uTexture, vT).rgb
-                  + texture(uTexture, vB).rgb;
-  fragColor = vec4(mix(center, neighbours * 0.25, uAmount), 1.0);
+  // 吸光度と顔料の量は同じ割合で広がらないと、混ざった色の比率が崩れる。
+  // 4 成分まとめて拡散させる
+  vec4 center = texture(uTexture, vUv);
+  vec4 neighbours = texture(uTexture, vL)
+                  + texture(uTexture, vR)
+                  + texture(uTexture, vT)
+                  + texture(uTexture, vB);
+  fragColor = mix(center, neighbours * 0.25, uAmount);
 }
 `;
 
@@ -292,8 +293,17 @@ void main () {
 
 /**
  * 画面への合成。
- * 染料場は「吸光度」なので、Beer–Lambert 則で透過率に直し、
- * 台紙(水)の色に掛けて合成する。これで重ね塗りが減法混色になる。
+ *
+ * 染料場は `rgb = 吸光度` / `a = 顔料の量` で持っている。ここから 2 つの色を作る:
+ *
+ * 1. **台紙に透けた色** — `台紙の色 * exp(-吸光度)`。
+ *    吸光度が加算されている = 透過率が乗算されているので、これが減法混色になる。
+ * 2. **顔料そのものの色** — 吸光度を量で割って「濃度 1 のときの色」に戻したもの。
+ *    白インクは吸光度 0 なので白になり、量だけが積み上がる。
+ *
+ * インクが薄いうちは 1 が、厚く乗るほど 2 が支配的になるよう混ぜる。
+ * これで、白い台紙では今までどおり透けた減法混色になり、
+ * 黒い台紙では顔料の色がちゃんと乗る。
  */
 export const DISPLAY_SHADER = /* glsl */ `#version 300 es
 precision highp float;
@@ -307,31 +317,39 @@ in vec2 vB;
 out vec4 fragColor;
 uniform sampler2D uDye;
 uniform vec3 uWaterColor;
+/** 顔料 1 単位あたりの被覆の強さ */
+uniform float uCoverage;
 
 vec3 linearToSrgb (vec3 c) {
   c = clamp(c, 0.0, 1.0);
   return mix(c * 12.92, 1.055 * pow(c, vec3(1.0 / 2.4)) - 0.055, step(vec3(0.0031308), c));
 }
 
-float density (vec3 absorbance) {
-  return dot(max(absorbance, vec3(0.0)), vec3(1.0 / 3.0));
-}
-
 void main () {
-  vec3 absorbance = max(texture(uDye, vUv).rgb, vec3(0.0));
-  vec3 color = uWaterColor * exp(-absorbance);
+  vec4 dye = max(texture(uDye, vUv), vec4(0.0));
+  vec3 absorbance = dye.rgb;
+  float pigment = dye.a;
+
+  vec3 throughWater = uWaterColor * exp(-absorbance);
+  // 量で正規化すると、何度重ねても「そのインク自身の色」に収束する。
+  // 実際、顔料を厚く盛っても黒にはならず顔料の色になる
+  vec3 pigmentColor = exp(-absorbance / max(pigment, 0.001));
+
+  float opacity = 1.0 - exp(-pigment * uCoverage);
+  vec3 color = mix(throughWater, pigmentColor, opacity);
 
 #ifdef SHADING
-  // 濃度の勾配を水面の起伏に見立てて陰影を付けると、
-  // 縁が締まって「乗っている」感じが出る
-  float dL = density(texture(uDye, vL).rgb);
-  float dR = density(texture(uDye, vR).rgb);
-  float dT = density(texture(uDye, vT).rgb);
-  float dB = density(texture(uDye, vB).rgb);
+  // 顔料の量の勾配を水面の起伏に見立てて陰影を付けると、
+  // 縁が締まって「乗っている」感じが出る。
+  // 吸光度ではなく量を見ているので、白インクにも陰影が付く
+  float dL = texture(uDye, vL).a;
+  float dR = texture(uDye, vR).a;
+  float dT = texture(uDye, vT).a;
+  float dB = texture(uDye, vB).a;
 
   vec3 normal = normalize(vec3(dR - dL, dT - dB, 0.6));
   float lit = clamp(dot(normal, normalize(vec3(-0.35, 0.35, 1.0))), 0.0, 1.0);
-  color *= mix(1.0, 0.62 + 0.53 * lit, clamp(density(absorbance), 0.0, 1.0));
+  color *= mix(1.0, 0.62 + 0.53 * lit, clamp(pigment, 0.0, 1.0));
 #endif
 
   fragColor = vec4(linearToSrgb(color), 1.0);
