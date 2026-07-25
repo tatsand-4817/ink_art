@@ -20,7 +20,10 @@ export interface SimConfig {
   pressureIterations: number;
   /** 渦度閉じ込めの強さ。大きいほど渦が長生きする。上げすぎると発散する */
   curl: number;
-  /** インクの滲み(拡散係数)。N-2 でユーザー調整可能にする予定 */
+  /**
+   * インクの滲み(拡散係数)。1 フレームあたりに隣へ広がる割合で、
+   * フレームレートに依らないよう内部で dt を掛けている。N-2 でユーザー調整可能にする予定
+   */
   dyeDiffusion: number;
   /** インク一滴の半径。画面の高さを 1 とした比率 */
   splatRadius: number;
@@ -29,8 +32,8 @@ export interface SimConfig {
   /** ドラッグ速度を水流に変換する係数 */
   splatForce: number;
   /**
-   * インクの濃さ。1.0 で、原液の芯がちょうどスウォッチの色に一致する。
-   * 薄まりは広がりに任せる
+   * インクの量(濃さ)。1.0 で、原液の芯がちょうどスウォッチの色に一致する。
+   * 下げると台紙が透ける水彩寄り、上げると顔料が前に出た不透明寄りになる
    */
   inkStrength: number;
   /**
@@ -52,7 +55,7 @@ export const DEFAULT_SIM_CONFIG: SimConfig = {
   pressure: 0.8,
   pressureIterations: 28,
   curl: 10,
-  dyeDiffusion: 0.05,
+  dyeDiffusion: 0.035,
   splatRadius: 0.055,
   dropImpulse: 0.0055,
   splatForce: 5200,
@@ -61,6 +64,13 @@ export const DEFAULT_SIM_CONFIG: SimConfig = {
   shading: true,
   maxPixelRatio: 2,
 };
+
+/**
+ * インクの量スライダーの範囲。1 が原液。
+ * 上限を 1.5 で切っているのは、それ以上盛っても被覆率が飽和して
+ * 一滴の見た目が変わらなくなるため(スライダーの上半分が死ぬ)。
+ */
+export const INK_AMOUNT_RANGE = { min: 0.1, max: 1.5, step: 0.05 } as const;
 
 /**
  * 台紙(水)の色。

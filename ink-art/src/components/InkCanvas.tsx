@@ -10,11 +10,13 @@ export interface InkCanvasHandle {
 
 interface Props {
   inkColor: RGB;
+  /** 一投あたりのインクの量。1 が原液 */
+  inkAmount: number;
   waterColor: RGB;
   ref?: Ref<InkCanvasHandle>;
 }
 
-export function InkCanvas({ inkColor, waterColor, ref }: Props) {
+export function InkCanvas({ inkColor, inkAmount, waterColor, ref }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const simulationRef = useRef<InkSimulation | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -22,6 +24,7 @@ export function InkCanvas({ inkColor, waterColor, ref }: Props) {
   // シミュレーションは張り替えずに使い回すので、変化する値は ref 経由で渡す
   const inkColorRef = useRef(inkColor);
   const waterColorRef = useRef(waterColor);
+  const inkAmountRef = useRef(inkAmount);
   inkColorRef.current = inkColor;
 
   useImperativeHandle(ref, () => ({
@@ -34,7 +37,9 @@ export function InkCanvas({ inkColor, waterColor, ref }: Props) {
 
     let simulation: InkSimulation;
     try {
-      simulation = new InkSimulation(canvas, waterColorRef.current);
+      simulation = new InkSimulation(canvas, waterColorRef.current, {
+        inkStrength: inkAmountRef.current,
+      });
     } catch (cause) {
       setError(
         cause instanceof WebGLUnsupportedError
@@ -69,6 +74,11 @@ export function InkCanvas({ inkColor, waterColor, ref }: Props) {
     waterColorRef.current = waterColor;
     simulationRef.current?.setWaterColor(waterColor);
   }, [waterColor]);
+
+  useEffect(() => {
+    inkAmountRef.current = inkAmount;
+    simulationRef.current?.updateConfig({ inkStrength: inkAmount });
+  }, [inkAmount]);
 
   if (error) {
     return (

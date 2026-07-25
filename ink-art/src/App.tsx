@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { InkCanvas, type InkCanvasHandle } from './components/InkCanvas.tsx';
 import { hexToRgb, type RGB } from './fluid/color.ts';
-import { DEFAULT_WATER_COLOR, WATER_PRESETS } from './fluid/config.ts';
+import { DEFAULT_WATER_COLOR, INK_AMOUNT_RANGE, WATER_PRESETS } from './fluid/config.ts';
 
 /**
  * 暫定パレット。
@@ -26,6 +26,8 @@ function requireRgb(hex: string): RGB {
 export default function App() {
   const [inkHex, setInkHex] = useState(PROVISIONAL_INKS[1].hex);
   const [waterHex, setWaterHex] = useState<string>(DEFAULT_WATER_COLOR);
+  const [inkAmount, setInkAmount] = useState(1);
+  const [panelOpen, setPanelOpen] = useState(false);
   const [hintVisible, setHintVisible] = useState(true);
   const canvasRef = useRef<InkCanvasHandle>(null);
 
@@ -44,11 +46,52 @@ export default function App() {
       className={`app${isDarkWater ? ' is-dark-water' : ''}`}
       onPointerDownCapture={() => setHintVisible(false)}
     >
-      <InkCanvas ref={canvasRef} inkColor={inkColor} waterColor={waterColor} />
+      <InkCanvas
+        ref={canvasRef}
+        inkColor={inkColor}
+        inkAmount={inkAmount}
+        waterColor={waterColor}
+      />
 
       <p className={`hint${hintVisible ? '' : ' is-hidden'}`} aria-hidden={!hintVisible}>
         水面をタップ、なぞると流れができる
       </p>
+
+      {panelOpen && (
+        <div className="panel">
+          <label className="panel-row">
+            <span className="panel-label">インクの量</span>
+            <input
+              type="range"
+              min={INK_AMOUNT_RANGE.min}
+              max={INK_AMOUNT_RANGE.max}
+              step={INK_AMOUNT_RANGE.step}
+              value={inkAmount}
+              onChange={(event) => setInkAmount(Number(event.target.value))}
+            />
+            <span className="panel-value">{Math.round(inkAmount * 100)}%</span>
+          </label>
+
+          <div className="panel-row">
+            <span className="panel-label">台紙</span>
+            <div className="waters" role="radiogroup" aria-label="台紙の色">
+              {WATER_PRESETS.map((water) => (
+                <button
+                  key={water.hex}
+                  type="button"
+                  role="radio"
+                  aria-checked={water.hex === waterHex}
+                  aria-label={`台紙 ${water.name}`}
+                  title={`台紙 ${water.name}`}
+                  className={`water${water.hex === waterHex ? ' is-selected' : ''}`}
+                  style={{ backgroundColor: water.hex }}
+                  onClick={() => setWaterHex(water.hex)}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="toolbar">
         <div className="swatches" role="radiogroup" aria-label="インクの色">
@@ -67,21 +110,14 @@ export default function App() {
           ))}
         </div>
 
-        <div className="waters" role="radiogroup" aria-label="台紙の色">
-          {WATER_PRESETS.map((water) => (
-            <button
-              key={water.hex}
-              type="button"
-              role="radio"
-              aria-checked={water.hex === waterHex}
-              aria-label={`台紙 ${water.name}`}
-              title={`台紙 ${water.name}`}
-              className={`water${water.hex === waterHex ? ' is-selected' : ''}`}
-              style={{ backgroundColor: water.hex }}
-              onClick={() => setWaterHex(water.hex)}
-            />
-          ))}
-        </div>
+        <button
+          type="button"
+          className={`action${panelOpen ? ' is-active' : ''}`}
+          aria-expanded={panelOpen}
+          onClick={() => setPanelOpen((open) => !open)}
+        >
+          調整
+        </button>
 
         <button type="button" className="action" onClick={() => canvasRef.current?.clear()}>
           消す

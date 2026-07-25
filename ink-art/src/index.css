@@ -18,6 +18,8 @@ body,
 
 body {
   overscroll-behavior: none;
+  /* 操作バーが狭い画面からはみ出してもページごと横スクロールさせない */
+  overflow: hidden;
   background: #ffffff;
 }
 
@@ -109,12 +111,71 @@ body {
   display: flex;
   align-items: center;
   gap: 0.65rem;
-  max-width: calc(100vw - 1.5rem);
+  max-width: calc(100% - 1.5rem);
   padding: 0.5rem 0.7rem;
   border-radius: 999px;
   background: var(--chrome-surface);
   backdrop-filter: blur(12px);
   box-shadow: var(--chrome-shadow);
+  /* 入りきらない場合はバーの中だけを横スクロールさせる */
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.toolbar::-webkit-scrollbar {
+  display: none;
+}
+
+.toolbar > * {
+  flex: 0 0 auto;
+}
+
+/* インクの量と台紙のパネル。操作バーの上に重ねる */
+.panel {
+  position: absolute;
+  left: 50%;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 4.4rem);
+  transform: translateX(-50%);
+  width: min(20rem, calc(100% - 1.5rem));
+  padding: 0.75rem 1rem;
+  border-radius: 1rem;
+  background: var(--chrome-surface);
+  backdrop-filter: blur(12px);
+  box-shadow: var(--chrome-shadow);
+  color: var(--chrome-ink);
+
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.panel-row {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+}
+
+.panel-row .waters {
+  margin-left: auto;
+}
+
+.panel-label {
+  min-width: 4.6rem;
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+
+.panel-row input[type='range'] {
+  flex: 1 1 auto;
+  min-width: 0;
+  accent-color: var(--chrome-ink);
+}
+
+.panel-value {
+  min-width: 2.9rem;
+  font-size: 0.8rem;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
 }
 
 .swatches,
@@ -158,11 +219,6 @@ body {
   outline-offset: 2px;
 }
 
-.waters {
-  padding-left: 0.65rem;
-  border-left: 1px solid var(--chrome-line);
-}
-
 .action {
   padding: 0.4rem 0.85rem;
   border: 0;
@@ -174,6 +230,7 @@ body {
   cursor: pointer;
 }
 
-.action:active {
+.action:active,
+.action.is-active {
   background: var(--chrome-fill-active);
 }

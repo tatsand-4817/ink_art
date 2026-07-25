@@ -100,6 +100,22 @@ uniform vec2 dyeTexelSize;
 uniform float dt;
 uniform float dissipation;
 
+/**
+ * 速度場をなめらかに読む。
+ *
+ * 速度場は染料場より 8 倍粗い。素直な線形補間だとテクセルの境目で
+ * 微分が不連続になり、その折れ目が毎フレーム染料に転写されて
+ * 縁がギザギザに崩れていく。補間の重みを smoothstep に置き換えると
+ * 折れ目が消える。テクスチャの読み出しは 1 回のままで済む。
+ */
+vec2 smoothVelocity (vec2 uv) {
+  vec2 st = uv / texelSize - 0.5;
+  vec2 base = floor(st);
+  vec2 f = st - base;
+  f = f * f * (3.0 - 2.0 * f);
+  return texture(uVelocity, (base + 0.5 + f) * texelSize).xy;
+}
+
 #ifdef MANUAL_FILTERING
 vec4 bilerp (sampler2D sam, vec2 uv, vec2 tsize) {
   vec2 st = uv / tsize - 0.5;
@@ -114,11 +130,10 @@ vec4 bilerp (sampler2D sam, vec2 uv, vec2 tsize) {
 #endif
 
 void main () {
+  vec2 coord = vUv - dt * smoothVelocity(vUv) * texelSize;
 #ifdef MANUAL_FILTERING
-  vec2 coord = vUv - dt * bilerp(uVelocity, vUv, texelSize).xy * texelSize;
   vec4 result = bilerp(uSource, coord, dyeTexelSize);
 #else
-  vec2 coord = vUv - dt * texture(uVelocity, vUv).xy * texelSize;
   vec4 result = texture(uSource, coord);
 #endif
   float decay = 1.0 + dissipation * dt;
@@ -136,23 +151,25 @@ precision highp float;
 precision highp sampler2D;
 
 in vec2 vUv;
-in vec2 vL;
-in vec2 vR;
-in vec2 vT;
-in vec2 vB;
 out vec4 fragColor;
 uniform sampler2D uTexture;
+uniform vec2 texelSize;
 uniform float uAmount;
 
 void main () {
+  // 上下左右 4 点の平均は縦横にだけよく広がる異方性の強い形で、
+  // 何千回も重ねると滲みの縁が菱形に角張ってくる。
+  // 半テクセルずらした 4 点ならハードウェアの線形補間が各点で 2x2 を
+  // 平均してくれるので、同じ 4 回の読み出しで等方的な 3x3 になる
+  vec2 h = 0.5 * texelSize;
+  vec4 blurred = texture(uTexture, vUv + vec2(-h.x, -h.y))
+               + texture(uTexture, vUv + vec2(h.x, -h.y))
+               + texture(uTexture, vUv + vec2(-h.x, h.y))
+               + texture(uTexture, vUv + vec2(h.x, h.y));
+
   // 吸光度と顔料の量は同じ割合で広がらないと、混ざった色の比率が崩れる。
   // 4 成分まとめて拡散させる
-  vec4 center = texture(uTexture, vUv);
-  vec4 neighbours = texture(uTexture, vL)
-                  + texture(uTexture, vR)
-                  + texture(uTexture, vT)
-                  + texture(uTexture, vB);
-  fragColor = mix(center, neighbours * 0.25, uAmount);
+  fragColor = mix(texture(uTexture, vUv), blurred * 0.25, uAmount);
 }
 `;
 
@@ -216,27 +233,40 @@ precision highp float;
 precision highp sampler2D;
 
 in vec2 vUv;
-in vec2 vL;
-in vec2 vR;
-in vec2 vT;
-in vec2 vB;
 out vec4 fragColor;
 uniform sampler2D uVelocity;
 uniform sampler2D uCurl;
+uniform vec2 texelSize;
 uniform float uCurlStrength;
 uniform float dt;
 
-void main () {
-  float L = texture(uCurl, vL).x;
-  float R = texture(uCurl, vR).x;
-  float T = texture(uCurl, vT).x;
-  float B = texture(uCurl, vB).x;
-  float C = texture(uCurl, vUv).x;
+float curlMagnitude (vec2 offset) {
+  return abs(texture(uCurl, vUv + offset * texelSize).x);
+}
 
-  vec2 force = 0.5 * vec2(abs(T) - abs(B), abs(R) - abs(L));
-  force /= length(force) + 0.0001;
-  force *= uCurlStrength * C;
-  force.y *= -1.0;
+void main () {
+  // 渦を押し戻す向きは |渦度| の勾配から決める。
+  // ここを上下左右 4 点の差分で取ると、グリッド 1 セル分の細かい揺らぎを
+  // そのまま拾って力に増幅してしまい、染料の縁がギザギザに崩れる。
+  // Sobel は 8 近傍で平滑化しながら微分するので、その増幅が起きない。
+  float tl = curlMagnitude(vec2(-1.0, 1.0));
+  float t = curlMagnitude(vec2(0.0, 1.0));
+  float tr = curlMagnitude(vec2(1.0, 1.0));
+  float l = curlMagnitude(vec2(-1.0, 0.0));
+  float r = curlMagnitude(vec2(1.0, 0.0));
+  float bl = curlMagnitude(vec2(-1.0, -1.0));
+  float b = curlMagnitude(vec2(0.0, -1.0));
+  float br = curlMagnitude(vec2(1.0, -1.0));
+
+  vec2 gradient = vec2(
+    (tr + 2.0 * r + br) - (tl + 2.0 * l + bl),
+    (tl + 2.0 * t + tr) - (bl + 2.0 * b + br)
+  );
+
+  // 勾配の向きに直交する方向へ押すと渦が保たれる。
+  // 平坦な場所で単位ベクトルを立てないよう、正規化に下駄を履かせている
+  vec2 direction = gradient / (length(gradient) + 0.02);
+  vec2 force = vec2(direction.y, -direction.x) * uCurlStrength * texture(uCurl, vUv).x;
 
   vec2 velocity = texture(uVelocity, vUv).xy + force * dt;
   fragColor = vec4(clamp(velocity, -1000.0, 1000.0), 0.0, 1.0);
