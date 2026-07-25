@@ -359,9 +359,16 @@ body {
   text-align: right;
 }
 
-.sheet-amount {
+.sheet-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
   padding-top: 0.6rem;
   border-top: 1px solid var(--chrome-line);
+}
+
+.quality-name {
+  min-width: 2.4rem;
 }
 
 .swatches {

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { hexToRgb, hslToRgb, rgbToHex, rgbToHsl, type HSL, type RGB } from '../fluid/color.ts';
-import { INK_AMOUNT_RANGE } from '../fluid/config.ts';
+import { INK_AMOUNT_RANGE, QUALITY_PRESETS } from '../fluid/config.ts';
 import { INK_PRESETS, WATER_PRESETS } from '../palette.ts';
 
 type Target = 'ink' | 'water';
@@ -134,6 +134,8 @@ interface Props {
   onInkSetChange: (index: number) => void;
   inkAmount: number;
   onInkAmountChange: (amount: number) => void;
+  qualityIndex: number;
+  onQualityChange: (index: number) => void;
 }
 
 /** 色選択のボトムシート(F-3 / F-4) */
@@ -148,6 +150,8 @@ export function ColorSheet({
   onInkSetChange,
   inkAmount,
   onInkAmountChange,
+  qualityIndex,
+  onQualityChange,
 }: Props) {
   const [target, setTarget] = useState<Target>('ink');
   const [mode, setMode] = useState<Mode>('preset');
@@ -271,8 +275,9 @@ export function ColorSheet({
             <CustomEditor hex={currentHex} onChange={commit} />
           )}
 
-          {isInk && (
-            <label className="slider-row sheet-amount">
+          {/* インクの量と画質はどちらのタブでも触れる全体設定なので、末尾にまとめる */}
+          <div className="sheet-footer">
+            <label className="slider-row">
               <span className="slider-name">量</span>
               <input
                 type="range"
@@ -284,7 +289,25 @@ export function ColorSheet({
               />
               <span className="slider-value">{Math.round(inkAmount * 100)}%</span>
             </label>
-          )}
+
+            <div className="slider-row">
+              <span className="slider-name quality-name">画質</span>
+              <div className="theme-row" role="radiogroup" aria-label="画質">
+                {QUALITY_PRESETS.map((quality, index) => (
+                  <button
+                    key={quality.name}
+                    type="button"
+                    role="radio"
+                    aria-checked={index === qualityIndex}
+                    className={`theme${index === qualityIndex ? ' is-selected' : ''}`}
+                    onClick={() => onQualityChange(index)}
+                  >
+                    {quality.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </>

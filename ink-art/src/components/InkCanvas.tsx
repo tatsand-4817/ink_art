@@ -12,11 +12,13 @@ interface Props {
   inkColor: RGB;
   /** 一投あたりのインクの量。1 が原液 */
   inkAmount: number;
+  /** 速度場・圧力場の解像度 */
+  simResolution: number;
   waterColor: RGB;
   ref?: Ref<InkCanvasHandle>;
 }
 
-export function InkCanvas({ inkColor, inkAmount, waterColor, ref }: Props) {
+export function InkCanvas({ inkColor, inkAmount, simResolution, waterColor, ref }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const simulationRef = useRef<InkSimulation | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -25,6 +27,7 @@ export function InkCanvas({ inkColor, inkAmount, waterColor, ref }: Props) {
   const inkColorRef = useRef(inkColor);
   const waterColorRef = useRef(waterColor);
   const inkAmountRef = useRef(inkAmount);
+  const simResolutionRef = useRef(simResolution);
   inkColorRef.current = inkColor;
 
   useImperativeHandle(ref, () => ({
@@ -39,6 +42,7 @@ export function InkCanvas({ inkColor, inkAmount, waterColor, ref }: Props) {
     try {
       simulation = new InkSimulation(canvas, waterColorRef.current, {
         inkStrength: inkAmountRef.current,
+        simResolution: simResolutionRef.current,
       });
     } catch (cause) {
       setError(
@@ -52,10 +56,10 @@ export function InkCanvas({ inkColor, inkAmount, waterColor, ref }: Props) {
     simulationRef.current = simulation;
     simulation.start();
 
-    if (import.meta.env.DEV) {
-      // 実機検証時にコンソールからパラメータを触れるようにしておく
-      (window as unknown as { __inkSim?: InkSimulation }).__inkSim = simulation;
-    }
+    // 検証時にコンソールからパラメータを触れるようにしておく。
+    // 実機の iOS Safari はコンソールに繋ぐのに Mac が要るので、
+    // 画質などその場で試したい設定は UI 側にも出してある
+    (window as unknown as { __inkSim?: InkSimulation }).__inkSim = simulation;
 
     const detachPointer = attachInkPointer(canvas, {
       getColor: () => inkColorRef.current,
@@ -79,6 +83,11 @@ export function InkCanvas({ inkColor, inkAmount, waterColor, ref }: Props) {
     inkAmountRef.current = inkAmount;
     simulationRef.current?.updateConfig({ inkStrength: inkAmount });
   }, [inkAmount]);
+
+  useEffect(() => {
+    simResolutionRef.current = simResolution;
+    simulationRef.current?.updateConfig({ simResolution });
+  }, [simResolution]);
 
   if (error) {
     return (

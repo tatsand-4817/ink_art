@@ -20,6 +20,7 @@ npm run build      # 型チェック + 本番ビルド
 | F-3 | インク色選択 | 実装済み(プリセット 4 テーマ + HEX / RGB / HSL) |
 | F-4 | 台紙の色選択 | 実装済み(プリセット + HEX / RGB / HSL) |
 | N-2 | インクの量調整 | 実装済み |
+| — | 画質(速度場の解像度)の切り替え | 実装済み |
 | F-6〜F-9 | 保存・共有・クリア・PWA | 未着手 |
 
 プリセットの色定義そのものは彩さんの確定までの**暫定**(`src/palette.ts`)。
@@ -199,9 +200,25 @@ half float を優先(iOS Safari 向け、かつ WebGL2 コアで線形補間可)
 `shading` はコンパイル時の分岐から uniform に変えてあるので、
 実行中に強度を 0〜1 で振れる(`__inkSim.updateConfig({ shading: 0.5 })`)。
 
+### 画質は UI から切り替える
+
+輪郭の粗さに直接効くのは `simResolution`。速度場が染料場より粗いほど、
+その格子の目が染料に転写されるため、上げるほど渦の筋が細かく出る。
+格子の面積は 4 倍になるが、重いのは染料場のパスなので実測での負荷増は 16%
+(5.45 → 4.60 fps)。
+
+費用対効果は良いものの、モバイルで 30fps を維持できるかは端末次第で、
+こちらでは測れない。そこで既定は「標準」(128)のままにして、
+「高精細」(256)へ UI から切り替えられるようにした。
+
+実機の iOS Safari はコンソールに繋ぐのに Mac が要るため、
+`__inkSim` を叩いて試す手は実質使えない。その場で体感して決められるよう
+UI に出しているのはそのため。`__inkSim` 自体は本番ビルドでも公開してある
+(PC での検証用)。
+
 ## チューニング
 
-すべて `src/fluid/config.ts`。開発ビルドでは `window.__inkSim` からも触れる。
+すべて `src/fluid/config.ts`。`window.__inkSim` からも触れる(本番ビルドでも公開)。
 
 ```js
 __inkSim.updateConfig({ curl: 20, dyeDiffusion: 0.02, shading: 0.5 });
@@ -229,6 +246,7 @@ __inkSim.samplePixel(0.5, 0.5)  // 表示色を 1 ピクセル読む(混色の�
 
 - **彩さん**: カラープリセットの確定。白や淡色も台紙を問わず置けるようになったので、
   モノクロ系・パステル系ともそのまま組んで大丈夫
-- **直さん**: iPhone Safari 実機で `simResolution` / `dyeResolution` / `pressureIterations` を詰める。
-  30fps を割るようなら `dyeResolution` → 512、`pressureIterations` → 20 の順で落とすのが効く
+- **直さん**: iPhone Safari 実機で「高精細」(`simResolution` 256)が 30fps を維持できるか確認。
+  維持できるなら既定に昇格させたい。割るようなら `dyeResolution` → 512、
+  `pressureIterations` → 20 の順で落とすのが効く
 - 保存(F-6)は `preserveDrawingBuffer` を常時 true にせず、保存時のみ高解像度で再描画する方式で入れる

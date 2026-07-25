@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { ColorSheet } from './components/ColorSheet.tsx';
 import { InkCanvas, type InkCanvasHandle } from './components/InkCanvas.tsx';
 import { hexToRgb, type RGB } from './fluid/color.ts';
+import { QUALITY_PRESETS } from './fluid/config.ts';
 import { DEFAULT_INK_HEX, DEFAULT_WATER_HEX, INK_PRESETS, isDarkHex } from './palette.ts';
 
 function requireRgb(hex: string): RGB {
@@ -15,6 +16,7 @@ export default function App() {
   const [waterHex, setWaterHex] = useState(DEFAULT_WATER_HEX);
   const [inkSetIndex, setInkSetIndex] = useState(0);
   const [inkAmount, setInkAmount] = useState(1);
+  const [qualityIndex, setQualityIndex] = useState(0);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [hintVisible, setHintVisible] = useState(true);
   const canvasRef = useRef<InkCanvasHandle>(null);
@@ -38,6 +40,7 @@ export default function App() {
         ref={canvasRef}
         inkColor={inkColor}
         inkAmount={inkAmount}
+        simResolution={QUALITY_PRESETS[qualityIndex].simResolution}
         waterColor={waterColor}
       />
 
@@ -56,6 +59,8 @@ export default function App() {
         onInkSetChange={setInkSetIndex}
         inkAmount={inkAmount}
         onInkAmountChange={setInkAmount}
+        qualityIndex={qualityIndex}
+        onQualityChange={setQualityIndex}
       />
 
       <div className="toolbar">
