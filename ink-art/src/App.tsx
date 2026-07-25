@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { InkCanvas, type InkCanvasHandle } from './components/InkCanvas.tsx';
 import { hexToRgb, type RGB } from './fluid/color.ts';
 import { DEFAULT_WATER_COLOR } from './fluid/config.ts';
@@ -25,14 +25,25 @@ function requireRgb(hex: string): RGB {
 
 export default function App() {
   const [inkHex, setInkHex] = useState(PROVISIONAL_INKS[0].hex);
+  const [hintVisible, setHintVisible] = useState(true);
   const canvasRef = useRef<InkCanvasHandle>(null);
 
   const inkColor = useMemo(() => requireRgb(inkHex), [inkHex]);
   const waterColor = useMemo(() => requireRgb(DEFAULT_WATER_COLOR), []);
 
+  // 初回のヒントは、触られるか少し経てば引っ込める
+  useEffect(() => {
+    const timer = window.setTimeout(() => setHintVisible(false), 6000);
+    return () => window.clearTimeout(timer);
+  }, []);
+
   return (
-    <div className="app">
+    <div className="app" onPointerDownCapture={() => setHintVisible(false)}>
       <InkCanvas ref={canvasRef} inkColor={inkColor} waterColor={waterColor} />
+
+      <p className={`hint${hintVisible ? '' : ' is-hidden'}`} aria-hidden={!hintVisible}>
+        水面をタップ、なぞると流れができる
+      </p>
 
       <div className="toolbar">
         <div className="swatches" role="radiogroup" aria-label="インクの色">
