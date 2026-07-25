@@ -1,0 +1,101 @@
+:root {
+  color-scheme: light;
+  font-family: 'Hiragino Sans', 'Noto Sans JP', system-ui, sans-serif;
+  -webkit-text-size-adjust: 100%;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  overscroll-behavior: none;
+  background: #eef4f7;
+}
+
+.app {
+  position: relative;
+  height: 100%;
+  width: 100%;
+}
+
+/* キャンバスは全画面。操作バーはこの上に重ねる */
+.ink-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  /* ドラッグでページがスクロール・ズームしないように */
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  cursor: crosshair;
+}
+
+.canvas-error {
+  display: grid;
+  place-items: center;
+  height: 100%;
+  padding: 2rem;
+  color: #33414d;
+  text-align: center;
+  line-height: 1.8;
+}
+
+.toolbar {
+  position: absolute;
+  left: 50%;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 1rem);
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.72);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 2px 16px rgb(15 35 55 / 0.12);
+}
+
+.swatches {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.swatch {
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border: 2px solid transparent;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1px rgb(15 35 55 / 0.12);
+  cursor: pointer;
+  transition: transform 120ms ease;
+}
+
+.swatch.is-selected {
+  border-color: #33414d;
+  transform: scale(1.12);
+}
+
+.action {
+  padding: 0.4rem 0.9rem;
+  border: 0;
+  border-radius: 999px;
+  background: rgb(15 35 55 / 0.06);
+  color: #33414d;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.action:active {
+  background: rgb(15 35 55 / 0.12);
+}
