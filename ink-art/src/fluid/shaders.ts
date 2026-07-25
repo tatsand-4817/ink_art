@@ -347,8 +347,20 @@ in vec2 vB;
 out vec4 fragColor;
 uniform sampler2D uDye;
 uniform vec3 uWaterColor;
+uniform vec2 texelSize;
 /** 顔料 1 単位あたりの被覆の強さ */
 uniform float uCoverage;
+/** 陰影の強さ。0 で無効 */
+uniform float uShading;
+
+/**
+ * 顔料の量をなめらかに読む。
+ * 半テクセルずらすとハードウェアの線形補間が 2x2 を平均してくれるので、
+ * 1 テクセル分の細かいムラを拾わずに済む。
+ */
+float pigmentAt (vec2 offset) {
+  return max(texture(uDye, vUv + offset * texelSize).a, 0.0);
+}
 
 vec3 linearToSrgb (vec3 c) {
   c = clamp(c, 0.0, 1.0);
@@ -368,19 +380,25 @@ void main () {
   float opacity = 1.0 - exp(-pigment * uCoverage);
   vec3 color = mix(throughWater, pigmentColor, opacity);
 
-#ifdef SHADING
-  // 顔料の量の勾配を水面の起伏に見立てて陰影を付けると、
-  // 縁が締まって「乗っている」感じが出る。
-  // 吸光度ではなく量を見ているので、白インクにも陰影が付く
-  float dL = texture(uDye, vL).a;
-  float dR = texture(uDye, vR).a;
-  float dT = texture(uDye, vT).a;
-  float dB = texture(uDye, vB).a;
+  if (uShading > 0.0) {
+    // 顔料の量の勾配を水面の起伏に見立てて陰影を付けると、
+    // 縁が締まって「乗っている」感じが出る。
+    // 吸光度ではなく量を見ているので、白インクにも陰影が付く。
+    //
+    // 勾配を隣接テクセルで取ると、染料場 1 テクセル分のムラをそのまま
+    // 明暗に増幅してしまい、流れが止まったときに細かい粒として残る。
+    // 斜め 1.5 テクセル先を読めば、各点が 2x2 の平均になったうえに
+    // 基線が 3 テクセルに広がるので、本当の起伏だけが拾える。
+    float tl = pigmentAt(vec2(-1.5, 1.5));
+    float tr = pigmentAt(vec2(1.5, 1.5));
+    float bl = pigmentAt(vec2(-1.5, -1.5));
+    float br = pigmentAt(vec2(1.5, -1.5));
 
-  vec3 normal = normalize(vec3(dR - dL, dT - dB, 0.6));
-  float lit = clamp(dot(normal, normalize(vec3(-0.35, 0.35, 1.0))), 0.0, 1.0);
-  color *= mix(1.0, 0.62 + 0.53 * lit, clamp(pigment, 0.0, 1.0));
-#endif
+    vec2 gradient = vec2((tr + br) - (tl + bl), (tl + tr) - (bl + br));
+    vec3 normal = normalize(vec3(gradient, 1.8));
+    float lit = clamp(dot(normal, normalize(vec3(-0.35, 0.35, 1.0))), 0.0, 1.0);
+    color *= mix(1.0, 0.62 + 0.53 * lit, clamp(pigment, 0.0, 1.0) * uShading);
+  }
 
   fragColor = vec4(linearToSrgb(color), 1.0);
 }

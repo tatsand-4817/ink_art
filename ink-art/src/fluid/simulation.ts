@@ -103,7 +103,6 @@ export class InkSimulation {
 
     // 浮動小数点テクスチャの線形補間が使えない環境ではシェーダ側で補間する
     const advectionDefines = this.resources.linearFiltering ? [] : ['MANUAL_FILTERING'];
-    const displayDefines = this.config.shading ? ['SHADING'] : [];
 
     const gl = this.gl;
     this.copyProgram = new GLProgram(gl, BASE_VERTEX_SHADER, COPY_SHADER);
@@ -116,7 +115,7 @@ export class InkSimulation {
     this.vorticityProgram = new GLProgram(gl, BASE_VERTEX_SHADER, VORTICITY_SHADER);
     this.pressureProgram = new GLProgram(gl, BASE_VERTEX_SHADER, PRESSURE_SHADER);
     this.gradientProgram = new GLProgram(gl, BASE_VERTEX_SHADER, GRADIENT_SUBTRACT_SHADER);
-    this.displayProgram = new GLProgram(gl, BASE_VERTEX_SHADER, DISPLAY_SHADER, displayDefines);
+    this.displayProgram = new GLProgram(gl, BASE_VERTEX_SHADER, DISPLAY_SHADER);
 
     this.setupQuad();
     this.syncCanvasSize();
@@ -131,6 +130,10 @@ export class InkSimulation {
 
   get simulationSize(): Resolution {
     return { width: this.velocity.width, height: this.velocity.height };
+  }
+
+  get dyeSize(): Resolution {
+    return { width: this.dye.width, height: this.dye.height };
   }
 
   setWaterColor(color: RGB): void {
@@ -325,9 +328,16 @@ export class InkSimulation {
 
   /** CSS サイズと devicePixelRatio から描画バッファのサイズを合わせる */
   private syncCanvasSize(): boolean {
-    const ratio = Math.min(window.devicePixelRatio || 1, this.config.maxPixelRatio);
-    const width = Math.max(Math.floor(this.canvas.clientWidth * ratio), 1);
-    const height = Math.max(Math.floor(this.canvas.clientHeight * ratio), 1);
+    const cssWidth = Math.max(this.canvas.clientWidth, 1);
+    const cssHeight = Math.max(this.canvas.clientHeight, 1);
+
+    let ratio = Math.min(window.devicePixelRatio || 1, this.config.maxPixelRatio);
+    // 画面が大きいほど等倍の負荷が効いてくるので、総ピクセル数で頭打ちにする
+    const budget = this.config.maxCanvasPixels / (cssWidth * cssHeight);
+    if (ratio * ratio > budget) ratio = Math.sqrt(budget);
+
+    const width = Math.max(Math.floor(cssWidth * ratio), 1);
+    const height = Math.max(Math.floor(cssHeight * ratio), 1);
 
     if (this.canvas.width === width && this.canvas.height === height) return false;
 
@@ -530,6 +540,7 @@ export class InkSimulation {
     gl.uniform2f(this.displayProgram.uniforms.texelSize, this.dye.texelSizeX, this.dye.texelSizeY);
     gl.uniform1i(this.displayProgram.uniforms.uDye, this.dye.read.attach(0));
     gl.uniform1f(this.displayProgram.uniforms.uCoverage, this.config.coverage);
+    gl.uniform1f(this.displayProgram.uniforms.uShading, this.config.shading);
     gl.uniform3f(
       this.displayProgram.uniforms.uWaterColor,
       this.waterColor[0],

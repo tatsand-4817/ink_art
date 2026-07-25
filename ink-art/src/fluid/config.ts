@@ -41,10 +41,20 @@ export interface SimConfig {
    * 上げるほど台紙が透けなくなり、インク自身の色が前に出る
    */
   coverage: number;
-  /** 濃度勾配による陰影付け */
-  shading: boolean;
-  /** devicePixelRatio の上限 */
+  /** 顔料の量の勾配による陰影付けの強さ。0 で無効、1 が標準 */
+  shading: number;
+  /**
+   * devicePixelRatio の上限。
+   * ここを 2 で止めると dpr 3 の端末ではキャンバスを 1.5 倍に引き伸ばして
+   * 表示することになり、細い筋にピクセルの階段が見えてしまう
+   */
   maxPixelRatio: number;
+  /**
+   * キャンバスの総ピクセル数の上限。
+   * 画素密度と画面サイズの積で負荷が青天井にならないように、
+   * 大きな画面ではここで比率を落とす
+   */
+  maxCanvasPixels: number;
 }
 
 export const DEFAULT_SIM_CONFIG: SimConfig = {
@@ -61,8 +71,9 @@ export const DEFAULT_SIM_CONFIG: SimConfig = {
   splatForce: 5200,
   inkStrength: 1,
   coverage: 1.6,
-  shading: true,
-  maxPixelRatio: 2,
+  shading: 1,
+  maxPixelRatio: 3,
+  maxCanvasPixels: 4_200_000,
 };
 
 /**
