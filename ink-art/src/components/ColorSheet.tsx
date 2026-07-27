@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { hexToRgb, hslToRgb, rgbToHex, rgbToHsl, type HSL, type RGB } from '../fluid/color.ts';
-import { INK_AMOUNT_RANGE, QUALITY_PRESETS } from '../fluid/config.ts';
+import { INK_AMOUNT_RANGE, INK_SIZE_RANGE, QUALITY_PRESETS } from '../fluid/config.ts';
 import { INK_PRESETS, WATER_PRESETS } from '../palette.ts';
 
 type Target = 'ink' | 'water';
@@ -134,6 +134,8 @@ interface Props {
   onInkSetChange: (index: number) => void;
   inkAmount: number;
   onInkAmountChange: (amount: number) => void;
+  inkSize: number;
+  onInkSizeChange: (size: number) => void;
   qualityIndex: number;
   onQualityChange: (index: number) => void;
 }
@@ -150,6 +152,8 @@ export function ColorSheet({
   onInkSetChange,
   inkAmount,
   onInkAmountChange,
+  inkSize,
+  onInkSizeChange,
   qualityIndex,
   onQualityChange,
 }: Props) {
@@ -278,7 +282,7 @@ export function ColorSheet({
           {/* インクの量と画質はどちらのタブでも触れる全体設定なので、末尾にまとめる */}
           <div className="sheet-footer">
             <label className="slider-row">
-              <span className="slider-name">量</span>
+              <span className="slider-name quality-name">濃さ</span>
               <input
                 type="range"
                 min={INK_AMOUNT_RANGE.min}
@@ -288,6 +292,19 @@ export function ColorSheet({
                 onChange={(event) => onInkAmountChange(Number(event.target.value))}
               />
               <span className="slider-value">{Math.round(inkAmount * 100)}%</span>
+            </label>
+
+            <label className="slider-row">
+              <span className="slider-name quality-name">サイズ</span>
+              <input
+                type="range"
+                min={INK_SIZE_RANGE.min}
+                max={INK_SIZE_RANGE.max}
+                step={INK_SIZE_RANGE.step}
+                value={inkSize}
+                onChange={(event) => onInkSizeChange(Number(event.target.value))}
+              />
+              <span className="slider-value">{Math.round(inkSize * 100)}%</span>
             </label>
 
             <div className="slider-row">

@@ -132,6 +132,11 @@ export class InkSimulation {
     return { width: this.velocity.width, height: this.velocity.height };
   }
 
+  /** 現在の設定。デバッグ表示用 */
+  get settings(): Readonly<SimConfig> {
+    return this.config;
+  }
+
   get dyeSize(): Resolution {
     return { width: this.dye.width, height: this.dye.height };
   }

@@ -12,13 +12,22 @@ interface Props {
   inkColor: RGB;
   /** 一投あたりのインクの量。1 が原液 */
   inkAmount: number;
+  /** 一滴の半径。画面の高さを 1 とした比率 */
+  splatRadius: number;
   /** 速度場・圧力場の解像度 */
   simResolution: number;
   waterColor: RGB;
   ref?: Ref<InkCanvasHandle>;
 }
 
-export function InkCanvas({ inkColor, inkAmount, simResolution, waterColor, ref }: Props) {
+export function InkCanvas({
+  inkColor,
+  inkAmount,
+  splatRadius,
+  simResolution,
+  waterColor,
+  ref,
+}: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const simulationRef = useRef<InkSimulation | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -28,6 +37,7 @@ export function InkCanvas({ inkColor, inkAmount, simResolution, waterColor, ref 
   const waterColorRef = useRef(waterColor);
   const inkAmountRef = useRef(inkAmount);
   const simResolutionRef = useRef(simResolution);
+  const splatRadiusRef = useRef(splatRadius);
   inkColorRef.current = inkColor;
 
   useImperativeHandle(ref, () => ({
@@ -43,6 +53,7 @@ export function InkCanvas({ inkColor, inkAmount, simResolution, waterColor, ref 
       simulation = new InkSimulation(canvas, waterColorRef.current, {
         inkStrength: inkAmountRef.current,
         simResolution: simResolutionRef.current,
+        splatRadius: splatRadiusRef.current,
       });
     } catch (cause) {
       setError(
@@ -88,6 +99,11 @@ export function InkCanvas({ inkColor, inkAmount, simResolution, waterColor, ref 
     simResolutionRef.current = simResolution;
     simulationRef.current?.updateConfig({ simResolution });
   }, [simResolution]);
+
+  useEffect(() => {
+    splatRadiusRef.current = splatRadius;
+    simulationRef.current?.updateConfig({ splatRadius });
+  }, [splatRadius]);
 
   if (error) {
     return (

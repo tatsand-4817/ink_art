@@ -77,6 +77,16 @@ export const DEFAULT_SIM_CONFIG: SimConfig = {
 };
 
 /**
+ * インクのサイズの範囲。標準の一滴を 1 とした倍率。
+ * 実際の半径は `DEFAULT_SIM_CONFIG.splatRadius * この値`。
+ *
+ * 「量」(濃度)とは別物で、こちらは一滴の大きさとドラッグの筆幅を変える。
+ * 着水時に水を押しのける範囲も半径に従って広がるので、
+ * 大きい滴ほど自然に大きく波打つ。
+ */
+export const INK_SIZE_RANGE = { min: 0.4, max: 2.4, step: 0.05 } as const;
+
+/**
  * 画質のプリセット。
  *
  * 効くのは速度場と圧力場の解像度。染料場より粗いほど、その格子の目が
