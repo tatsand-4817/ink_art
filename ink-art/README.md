@@ -21,7 +21,7 @@ npm run build      # 型チェック + 本番ビルド
 | F-4 | 台紙の色選択 | 実装済み(プリセット + HEX / RGB / HSL) |
 | N-2 | インクの濃さ・サイズ調整 | 実装済み |
 | — | 画質(速度場の解像度)の切り替え | 実装済み |
-| F-9 | PWA 対応 | 実装済み(アイコンのアートワークは仮) |
+| F-9 | PWA 対応 | 実装済み |
 | F-6〜F-8 | 保存・共有・クリア | 未着手 |
 
 プリセットの色定義そのものは彩さんの確定までの**暫定**(`src/palette.ts`)。
@@ -42,11 +42,12 @@ src/
     config.ts       チューニング値
   input/pointer.ts  ポインタ操作 → インク投下への変換
   palette.ts        プリセットの色定義(彩さん確定までの暫定)
-public/icons/     PWA アイコン一式(source.png から生成)
-scripts/build-icons.py  アイコンの書き出し
   components/
     InkCanvas.tsx   キャンバスとシミュレーションの寿命管理
     ColorSheet.tsx  色選択のボトムシート(F-3 / F-4)
+artwork/          アイコンのマスター画像(配信対象外)
+public/icons/     生成された PWA アイコン一式
+scripts/build-icons.py  アイコンの書き出し
 ```
 
 ## 設計上の判断
@@ -217,19 +218,21 @@ iOS はホーム画面のアイコンに manifest を見てくれないので、
 
 #### アイコン
 
-`public/icons/source.png`(正方形)を元に `scripts/build-icons.py` で
+`artwork/icon-source.png`(正方形)を元に `scripts/build-icons.py` で
 一式を書き出す。アートワークを差し替えたらこれを流すだけ。
 
 ```bash
 python3 scripts/build-icons.py [元画像]
 ```
 
+マスターを `public/` の外に置いているのは、`public/` の中身がそのまま
+ビルド成果物へコピーされるため。オフライン起動のために全部プリキャッシュ
+する設定なので、実際には使わない原寸画像まで毎回配信することになってしまう
+(1254px の原寸を入れたままだとプリキャッシュが 2.3MB、外すと 836KB)。
+
 `maskable` だけ扱いが違う。Android はアイコンを端末ごとの形に切り抜くので、
 中身が中央 80% の円に収まっていないと角が欠ける。スクリプトでは絵柄を 80% に
 縮めて中央に置き、余白は元画像を拡大してぼかしたものを敷いて繋げている。
-
-**現在の `source.png` は仮のプレースホルダ**。tattun さんのアートワークが
-届き次第差し替える。
 
 #### 検証状況
 
@@ -237,7 +240,7 @@ python3 scripts/build-icons.py [元画像]
 
 - manifest / 全アイコン / apple-touch-icon が 200 で取得できる
 - Service Worker が `scope: /` で `activated` になる
-- プリキャッシュが 11 件積まれる
+- プリキャッシュが 10 件(836KB)積まれる
 - **オフラインにして再読み込みしても起動し、インクを落とせる**(芯 `#ff705f`)
 
 ホーム画面への追加とスタンドアロン起動は実機でしか確認できないので未検証。

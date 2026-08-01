@@ -4,8 +4,12 @@ PWA 用のアイコン一式を書き出す。
 
     python3 scripts/build-icons.py [元画像]
 
-元画像は正方形の PNG / JPEG(既定は public/icons/source.png)。
+元画像は正方形の PNG / JPEG(既定は artwork/icon-source.png)。
 アートワークを差し替えたらこれを流すだけでよい。
+
+マスターを public/ の外に置いているのは、public/ の中身がそのまま
+ビルド成果物へコピーされるため。オフライン起動のために全部プリキャッシュ
+する設定なので、実際には使わない原寸画像まで毎回配信することになってしまう。
 
 maskable だけは扱いが違う。Android はアイコンを端末ごとの形に切り抜くので、
 中身が中央 80% の円に収まっていないと角が欠ける。ここでは絵柄を 80% に縮めて
@@ -15,9 +19,10 @@ maskable だけは扱いが違う。Android はアイコンを端末ごとの形
 import sys
 from pathlib import Path
 
-from PIL import Image, ImageFilter
+from PIL import Image, ImageDraw, ImageFilter
 
 ROOT = Path(__file__).resolve().parent.parent
+SOURCE = ROOT / 'artwork' / 'icon-source.png'
 OUT = ROOT / 'public' / 'icons'
 
 # (ファイル名, 辺の長さ)
@@ -43,6 +48,7 @@ def square(image: Image.Image) -> Image.Image:
 
 def build_maskable(source: Image.Image, size: int) -> Image.Image:
     inner = round(size * SAFE_RATIO)
+    margin = (size - inner) // 2
 
     # 余白は元画像を拡大してぼかしたものを敷き、切り抜かれても模様が続くようにする
     backdrop = source.resize((round(size * 1.6),) * 2, Image.LANCZOS)
@@ -51,13 +57,22 @@ def build_maskable(source: Image.Image, size: int) -> Image.Image:
     backdrop = backdrop.filter(ImageFilter.GaussianBlur(size * 0.03))
 
     foreground = source.resize((inner, inner), Image.LANCZOS)
-    margin = (size - inner) // 2
-    backdrop.paste(foreground, (margin, margin))
+
+    # そのまま貼ると縮めた絵の四角い境目が出るので、外周をぼかして地に溶かす。
+    # 絵柄は中央に寄っているため、ぼかすのは背景の模様の部分だけになる
+    feather = max(round(size * 0.05), 1)
+    mask = Image.new('L', (inner, inner), 0)
+    ImageDraw.Draw(mask).rectangle(
+        [feather, feather, inner - 1 - feather, inner - 1 - feather], fill=255
+    )
+    mask = mask.filter(ImageFilter.GaussianBlur(feather * 0.6))
+
+    backdrop.paste(foreground, (margin, margin), mask)
     return backdrop
 
 
 def main() -> int:
-    source_path = Path(sys.argv[1]) if len(sys.argv) > 1 else OUT / 'source.png'
+    source_path = Path(sys.argv[1]) if len(sys.argv) > 1 else SOURCE
     if not source_path.exists():
         print(f'元画像が見つかりません: {source_path}', file=sys.stderr)
         return 1
